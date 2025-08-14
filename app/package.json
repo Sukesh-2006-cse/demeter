@@ -1,0 +1,14 @@
+{
+  "name": "demeter-app",
+  "version": "1.0.0",
+  "main": "App.js",
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-native": "^0.71.0"
+  }
+}
