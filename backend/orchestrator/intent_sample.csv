@@ -1,0 +1,318 @@
+text,label
+"Which crop should I plant this season?",crop
+"मुझे बताइए कौन सी फसल लगाऊँ",crop
+"Is there any pest outbreak nearby?",risk
+"क्या खेत में कीट है?",risk
+"What is the market price of onions today?",market_yield
+"प्याज का बाजार भाव क्या है?",market_yield
+"Am I eligible for crop insurance and loan?",finance
+"मुझे किस योजना का लाभ मिलेगा?",finance
+"Which fertilizer for pH 6.5 soil?",crop
+"When should I irrigate my field?",risk
+"What crop is best for my soil type?",crop
+"Which variety of rice should I grow?",crop
+"Best crops for monsoon season",crop
+"Suggest drought resistant crops",crop
+"What to plant in sandy soil?",crop
+"High yield crop recommendations",crop
+"Organic farming crop suggestions",crop
+"Cash crops for small farmers",crop
+"Crop rotation suggestions",crop
+"Winter season crop options",crop
+
+"என் மண்ணுக்கு எந்த பயிர் சிறந்தது?",crop
+"இந்த பருவத்தில் எந்த பயிர் நடவு செய்யலாம்?",crop
+"நெல் சாகுபடிக்கு சிறந்த ரகம் எது?",crop
+"வறட்சியை தாங்கும் பயிர்கள் எவை?",crop
+"மணல் மண்ணில் என்ன பயிர் செய்யலாம்?",crop
+"அதிக மகசூல் தரும் பயிர்கள்",crop
+"இயற்கை விவசாயத்திற்கு ஏற்ற பயிர்கள்",crop
+"சிறு விவசாயிகளுக்கான பணப்பயிர்கள்",crop
+"பயிர் சுழற்சி பரிந்துரைகள்",crop
+"குளிர்கால பயிர் விருப்பங்கள்",crop
+
+"నా మట్టికి ఏ పంట మంచిది?",crop
+"ఈ సీజన్‌లో ఏ పంట వేయాలి?",crop
+"వరి సాగుకు మంచి రకం ఏది?",crop
+"కరువు తట్టుకునే పంటలు ఏవి?",crop
+"ఇసుక మట్టిలో ఏ పంట చేయాలి?",crop
+"ఎక్కువ దిగుబడి ఇచ్చే పంటలు",crop
+"సేంద్రీయ వ్యవసాయానికి అనువైన పంటలు",crop
+"చిన్న రైతులకు లాభదాయక పంటలు",crop
+"పంట మార్పిడి సూచనలు",crop
+"చలికాలం పంట ఎంపికలు",crop
+
+"എന്റെ മണ്ണിന് ഏത് വിളയാണ് നല്లത്?",crop
+"ഈ സീസണിൽ ഏത് വിള നടാം?",crop
+"നെല്ല് കൃഷിക്ക് നല്ല ഇനം ഏതാണ്?",crop
+"വരൾച്ച സഹിക്കുന്ന വിളകൾ ഏവ?",crop
+"മണൽ മണ്ണിൽ ഏത് വിള ചെയ്യാം?",crop
+"കൂടുതൽ വിളവ് തരുന്ന വിളകൾ",crop
+"ജൈവകൃഷിക്ക് അനുയോജ്യമായ വിളകൾ",crop
+"ചെറുകിസാനുകൾക്കുള്ള പണവിളകൾ",crop
+"വിള മാറ്റിക്കൃഷി നിർദ്ദേശങ്ങൾ",crop
+"ശീതകാല വിള ഓപ്ഷനുകൾ",crop
+
+# Kannada - Crop Intents
+"ನನ್ನ ಮಣ್ಣಿಗೆ ಯಾವ ಬೆಳೆ ಉತ್ತಮ?",crop
+"ಈ ಋತುವಿನಲ್ಲಿ ಯಾವ ಬೆಳೆ ಬೆಳೆಯಬೇಕು?",crop
+"ಅಕ್ಕಿ ಬೆಳೆಗೆ ಉತ್ತಮ ಪ್ರಭೇದ ಯಾವುದು?",crop
+"ಬರಗಾಲವನ್ನು ತಡೆದುಕೊಳ್ಳುವ ಬೆಳೆಗಳು ಯಾವುವು?",crop
+"ಮರಳು ಮಣ್ಣಿನಲ್ಲಿ ಯಾವ ಬೆಳೆ ಮಾಡಬಹುದು?",crop
+"ಹೆಚ್ಚು ಇಳುವರಿ ನೀಡುವ ಬೆಳೆಗಳು",crop
+"ಸಾವಯವ ಕೃಷಿಗೆ ಸೂಕ್ತ ಬೆಳೆಗಳು",crop
+"ಸಣ್ಣ ರೈತರಿಗೆ ಲಾಭದಾಯಕ ಬೆಳೆಗಳು",crop
+"ಬೆಳೆ ಸರದಿ ಸಲಹೆಗಳು",crop
+"ಚಳಿಗಾಲದ ಬೆಳೆ ಆಯ್ಕೆಗಳು",crop
+
+# MARKET & YIELD INTENTS
+"Current market price of wheat",market_yield
+"Best time to sell my harvest",market_yield
+"Market demand for vegetables",market_yield
+"Price forecast for next month",market_yield
+"Where to sell my produce",market_yield
+"Export opportunities for crops",market_yield
+"Wholesale market rates today",market_yield
+"Minimum support price information",market_yield
+"Market trends for organic produce",market_yield
+"Commodity price alerts",market_yield
+
+# Tamil - Market Intents
+"கோதுமையின் தற்போதைய சந்தை விலை",market_yield
+"என் அறுவடையை எப்போது விற்பது சிறந்தது",market_yield
+"காய்கறிகளுக்கான சந்தை தேவை",market_yield
+"அடுத்த மாதத்திற்கான விலை முன்னறிவிப்பு",market_yield
+"என் விளைபொருளை எங்கே விற்பது",market_yield
+"பயிர்களுக்கான ஏற்றுமதி வாய்ப்புகள்",market_yield
+"இன்றைய மொத்த சந்தை விலைகள்",market_yield
+"குறைந்தபட்ச ஆதரவு விலை தகவல்",market_yield
+"இயற்கை விளைபொருட்களின் சந்தை போக்குகள்",market_yield
+"பொருட்களின் விலை எச்சரிக்கைகள்",market_yield
+
+# Telugu - Market Intents
+"గోధుమ ప్రస్తుత మార్కెట్ ధర",market_yield
+"నా పంటను ఎప్పుడు అమ్మాలి",market_yield
+"కూరగాయలకు మార్కెట్ డిమాండ్",market_yield
+"వచ్చే నెలకు ధర అంచనా",market_yield
+"నా ఉత్పత్తులను ఎక్కడ అమ్మాలి",market_yield
+"పంటలకు ఎగుమతి అవకాశాలు",market_yield
+"నేటి టోకు మార్కెట్ రేట్లు",market_yield
+"కనీస మద్దతు ధర సమాచారం",market_yield
+"సేంద్రీయ ఉత్పత్తుల మార్కెట్ ట్రెండ్స్",market_yield
+"వస్తువుల ధర హెచ్చరికలు",market_yield
+
+# Malayalam - Market Intents
+"ഗോതമ്പിന്റെ ഇന്നത്തെ മാർക്കറ്റ് വില",market_yield
+"എന്റെ വിളവെടുപ്പ് എപ്പോൾ വിൽക്കണം",market_yield
+"പച്ചക്കറികൾക്കുള്ള മാർക്കറ്റ് ഡിമാൻഡ്",market_yield
+"അടുത്ത മാസത്തേക്കുള്ള വില പ്രവചനം",market_yield
+"എന്റെ ഉൽപ്പന്നങ്ങൾ എവിടെ വിൽക്കാം",market_yield
+"വിളകൾക്കുള്ള കയറ്റുമതി അവസരങ്ങൾ",market_yield
+"ഇന്നത്തെ മൊത്തവ്യാപാര നിരക്കുകൾ",market_yield
+"മിനിമം സപ്പോർട്ട് പ്രൈസ് വിവരങ്ങൾ",market_yield
+"ഓർഗാനിക് ഉൽപ്പന്നങ്ങളുടെ മാർക്കറ്റ് ട്രെൻഡുകൾ",market_yield
+"ചരക്ക് വില അലേർട്ടുകൾ",market_yield
+
+# Kannada - Market Intents
+"ಗೋಧಿಯ ಪ್ರಸ್ತುತ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ",market_yield
+"ನನ್ನ ಸುಗ್ಗಿಯನ್ನು ಯಾವಾಗ ಮಾರಬೇಕು",market_yield
+"ತರಕಾರಿಗಳಿಗೆ ಮಾರುಕಟ್ಟೆ ಬೇಡಿಕೆ",market_yield
+"ಮುಂದಿನ ತಿಂಗಳ ಬೆಲೆ ಮುನ್ಸೂಚನೆ",market_yield
+"ನನ್ನ ಉತ್ಪನ್ನಗಳನ್ನು ಎಲ್ಲಿ ಮಾರಬೇಕು",market_yield
+"ಬೆಳೆಗಳಿಗೆ ರಫ್ತು ಅವಕಾಶಗಳು",market_yield
+"ಇಂದಿನ ಸಗಟು ಮಾರುಕಟ್ಟೆ ದರಗಳು",market_yield
+"ಕನಿಷ್ಠ ಬೆಂಬಲ ಬೆಲೆ ಮಾಹಿತಿ",market_yield
+"ಸಾವಯವ ಉತ್ಪನ್ನಗಳ ಮಾರುಕಟ್ಟೆ ಪ್ರವೃತ್ತಿಗಳು",market_yield
+"ಸರಕುಗಳ ಬೆಲೆ ಎಚ್ಚರಿಕೆಗಳು",market_yield
+
+# RISK & PEST MANAGEMENT INTENTS
+"Pest identification in my crop",risk
+"Disease symptoms in plants",risk
+"Weather risk assessment",risk
+"Drought preparedness measures",risk
+"Flood damage prevention",risk
+"Insect infestation control",risk
+"Fungal disease treatment",risk
+"Crop protection strategies",risk
+"Early warning systems",risk
+"Natural pest control methods",risk
+
+# Tamil - Risk Intents
+"என் பயிரில் பூச்சி அடையாளம்",risk
+"தாவரங்களில் நோய் அறிகுறிகள்",risk
+"வானிலை ஆபத்து மதிப்பீடு",risk
+"வறட்சி தயார்நிலை நடவடிக்கைகள்",risk
+"வெள்ள சேத தடுப்பு",risk
+"பூச்சி தாக்குதல் கட்டுப்பாடு",risk
+"பூஞ்சை நோய் சிகிச்சை",risk
+"பயிர் பாதுகாப்பு உத்திகள்",risk
+"முன்னெச்சரிக்கை அமைப்புகள்",risk
+"இயற்கை பூச்சி கட்டுப்பாடு முறைகள்",risk
+
+# Telugu - Risk Intents
+"నా పంటలో కీటకాల గుర్తింపు",risk
+"మొక్కలలో వ్యాధి లక్షణాలు",risk
+"వాతావరణ ప్రమాద అంచనా",risk
+"కరువు సన్నద్ధత చర్యలు",risk
+"వరద నష్టాల నివారణ",risk
+"కీటకాల దాడి నియంత్రణ",risk
+"ఫంగల్ వ్యాధి చికిత్స",risk
+"పంట రక్షణ వ్యూహాలు",risk
+"ముందస్తు హెచ్చరిక వ్యవస్థలు",risk
+"సహజ కీటక నియంత్రణ పద్ధతులు",risk
+
+# Malayalam - Risk Intents
+"എന്റെ വിളയിലെ കീടങ്ങളുടെ തിരിച്ചറിയൽ",risk
+"ചെടികളിലെ രോഗലക്ഷണങ്ങൾ",risk
+"കാലാവസ്ഥാ അപകടസാധ്യത വിലയിരുത്തൽ",risk
+"വരൾച്ച തയ്യാറെടുപ്പ് നടപടികൾ",risk
+"വെള്ളപ്പൊക്ക നാശനഷ്ട തടയൽ",risk
+"കീട ആക്രമണ നിയന്ത്രണം",risk
+"ഫംഗൽ രോഗ ചികിത്സ",risk
+"വിള സംരക്ഷണ തന്ത്രങ്ങൾ",risk
+"മുൻകൂർ മുന്നറിയിപ്പ് സംവിധാനങ്ങൾ",risk
+"പ്രകൃതിദത്ത കീട നിയന്ത്രണ രീതികൾ",risk
+
+# Kannada - Risk Intents
+"ನನ್ನ ಬೆಳೆಯಲ್ಲಿ ಕೀಟಗಳ ಗುರುತಿಸುವಿಕೆ",risk
+"ಸಸ್ಯಗಳಲ್ಲಿ ರೋಗದ ಲಕ್ಷಣಗಳು",risk
+"ಹವಾಮಾನ ಅಪಾಯ ಮೌಲ್ಯಮಾಪನ",risk
+"ಬರಗಾಲ ಸಿದ್ಧತೆ ಕ್ರಮಗಳು",risk
+"ಪ್ರವಾಹ ಹಾನಿ ತಡೆಗಟ್ಟುವಿಕೆ",risk
+"ಕೀಟ ಆಕ್ರಮಣ ನಿಯಂತ್ರಣ",risk
+"ಶಿಲೀಂಧ್ರ ರೋಗ ಚಿಕಿತ್ಸೆ",risk
+"ಬೆಳೆ ರಕ್ಷಣೆ ತಂತ್ರಗಳು",risk
+"ಮುಂಚಿನ ಎಚ್ಚರಿಕೆ ವ್ಯವಸ್ಥೆಗಳು",risk
+"ನೈಸರ್ಗಿಕ ಕೀಟ ನಿಯಂತ್ರಣ ವಿಧಾನಗಳು",risk
+
+# FINANCE & SCHEMES INTENTS
+"Crop insurance eligibility",finance
+"Agricultural loan application",finance
+"Government subsidy schemes",finance
+"Kisan credit card benefits",finance
+"PM-KISAN scheme details",finance
+"Crop loan interest rates",finance
+"Insurance claim process",finance
+"Financial assistance programs",finance
+"Equipment purchase loans",finance
+"Organic farming incentives",finance
+
+# Tamil - Finance Intents
+"பயிர் காப்பீட்டு தகுதி",finance
+"விவசாய கடன் விண்ணப்பம்",finance
+"அரசு மானிய திட்டங்கள்",finance
+"கிசான் கிரெடிட் கார்டு நன்மைகள்",finance
+"பிஎம்-கிசான் திட்ட விவரங்கள்",finance
+"பயிர் கடன் வட்டி விகிதங்கள்",finance
+"காப்பீட்டு உரிமைகோரல் செயல்முறை",finance
+"நிதி உதவி திட்டங்கள்",finance
+"உபகரண வாங்கல் கடன்கள்",finance
+"இயற்கை விவசாய ஊக்கத்தொகைகள்",finance
+
+# Telugu - Finance Intents
+"పంట బీమా అర్హత",finance
+"వ్యవసాయ రుణ దరఖాస్తు",finance
+"ప్రభుత్వ సబ్సిడీ పథకాలు",finance
+"కిసాన్ క్రెడిట్ కార్డ్ ప్రయోజనాలు",finance
+"పిఎం-కిసాన్ పథకం వివరాలు",finance
+"పంట రుణ వడ్డీ రేట్లు",finance
+"బీమా క్లెయిమ్ ప్రక్రియ",finance
+"ఆర్థిక సహాయ కార్యక్రమాలు",finance
+"పరికరాల కొనుగోలు రుణాలు",finance
+"సేంద్రీయ వ్యవసాయ ప్రోత్సాహకాలు",finance
+
+# Malayalam - Finance Intents
+"വിള ഇൻഷുറൻസ് യോഗ്യത",finance
+"കാർഷിക വായ്പ അപേക്ഷ",finance
+"സർക്കാർ സബ്സിഡി പദ്ധതികൾ",finance
+"കിസാൻ ക്രെഡിറ്റ് കാർഡ് ആനുകൂല്യങ്ങൾ",finance
+"പിഎം-കിസാൻ പദ്ധതി വിശദാംശങ്ങൾ",finance
+"വിള വായ്പ പലിശ നിരക്കുകൾ",finance
+"ഇൻഷുറൻസ് ക്ലെയിം പ്രക്രിയ",finance
+"സാമ്പത്തിക സഹായ പരിപാടികൾ",finance
+"ഉപകരണ വാങ്ങൽ വായ്പകൾ",finance
+"ജൈവകൃഷി പ്രോത്സാഹനങ്ങൾ",finance
+
+# Kannada - Finance Intents
+"ಬೆಳೆ ವಿಮೆ ಅರ್ಹತೆ",finance
+"ಕೃಷಿ ಸಾಲ ಅರ್ಜಿ",finance
+"ಸರ್ಕಾರಿ ಸಬ್ಸಿಡಿ ಯೋಜನೆಗಳು",finance
+"ಕಿಸಾನ್ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಪ್ರಯೋಜನಗಳು",finance
+"ಪಿಎಂ-ಕಿಸಾನ್ ಯೋಜನೆ ವಿವರಗಳು",finance
+"ಬೆಳೆ ಸಾಲ ಬಡ್ಡಿ ದರಗಳು",finance
+"ವಿಮೆ ಕ್ಲೈಮ್ ಪ್ರಕ್ರಿಯೆ",finance
+"ಆರ್ಥಿಕ ಸಹಾಯ ಕಾರ್ಯಕ್ರಮಗಳು",finance
+"ಉಪಕರಣ ಖರೀದಿ ಸಾಲಗಳು",finance
+"ಸಾವಯವ ಕೃಷಿ ಪ್ರೋತ್ಸಾಹಗಳು",finance
+
+# ADDITIONAL MIXED LANGUAGE QUERIES
+"Soil testing lab near me",crop
+"Water quality analysis",crop
+"Seed quality certification",crop
+"Fertilizer recommendations",crop
+"Irrigation scheduling",risk
+"Harvest timing advice",market_yield
+"Storage facility options",market_yield
+"Transportation for produce",market_yield
+"Contract farming opportunities",finance
+"Cooperative society benefits",finance
+
+# Hindi Mixed Queries
+"मिट्टी की जांच कहाँ कराएं",crop
+"पानी की गुणवत्ता की जांच",crop
+"बीज की गुणवत्ता प्रमाणन",crop
+"उर्वरक की सिफारिशें",crop
+"सिंचाई का समय",risk
+"फसल काटने का समय",market_yield
+"भंडारण की सुविधा",market_yield
+"उत्पादन का परिवहन",market_yield
+"कॉन्ट्रैक्ट फार्मिंग के अवसर",finance
+"सहकारी समिति के फायदे",finance
+
+# Weather Related Queries
+"Tomorrow's weather forecast",risk
+"Rainfall prediction this week",risk
+"Temperature alerts for crops",risk
+"Humidity levels impact",risk
+"Wind speed warnings",risk
+"Frost protection measures",risk
+"Heat wave precautions",risk
+"Monsoon arrival date",risk
+"Cyclone preparedness",risk
+"Drought monitoring",risk
+
+# Technology & Modern Farming
+"Drone usage in agriculture",crop
+"Precision farming techniques",crop
+"IoT sensors for farming",crop
+"Mobile apps for farmers",crop
+"GPS guided tractors",crop
+"Automated irrigation systems",crop
+"Satellite imagery analysis",crop
+"AI crop monitoring",crop
+"Smart greenhouse technology",crop
+"Blockchain in agriculture",crop
+
+# Organic & Sustainable Farming
+"Organic certification process",crop
+"Biofertilizer recommendations",crop
+"Composting techniques",crop
+"Natural pesticide recipes",crop
+"Sustainable farming practices",crop
+"Carbon credit opportunities",crop
+"Water conservation methods",crop
+"Soil health improvement",crop
+"Biodiversity conservation",crop
+"Renewable energy in farming",crop
+
+# Export & International Trade
+"Export quality standards",market_yield
+"International market prices",market_yield
+"Export documentation help",market_yield
+"Quality certification for export",market_yield
+"Shipping and logistics",market_yield
+"Foreign buyer connections",market_yield
+"Currency exchange rates",market_yield
+"Trade agreements impact",market_yield
+"Export incentive schemes",finance
+"International food safety norms",market_yield
