@@ -5,10 +5,10 @@ import { useState } from 'react';
 import LoginScreen from './onboarding/LoginScreen';
 import OtpScreen from './onboarding/OtpScreen';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
+import { Stack } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
+import React from 'react';
+import { useFonts } from 'expo-font';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,38 +19,16 @@ export default function RootLayout() {
   const [showOtp, setShowOtp] = useState(false);
   const [phone, setPhone] = useState('');
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
-  if (!isLoggedIn) {
-    if (showOtp) {
-      return <OtpScreen onVerify={() => setIsLoggedIn(true)} onBack={() => setShowOtp(false)} />;
-    }
-    return (
-      <LoginScreen
-        onSendOtp={(phone) => {
-          setPhone(phone);
-          setShowOtp(true);
-        }}
-        onGoogleSignIn={() => setIsLoggedIn(true)}
-        onSkip={() => setIsLoggedIn(true)}
-      />
-    );
-  }
+  if (!loaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* The entire tabs navigator */}
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
-}
-
-export function TabLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
 }
