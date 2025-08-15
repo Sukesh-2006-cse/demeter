@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AppLogoIcon } from '../../components/ui/AppLogoIcon';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Footer from '../../components/Footer';
@@ -49,6 +50,7 @@ export default function VoiceScreen() {
 	const [modal, setModal] = useState<null | 'crop' | 'market' | 'yield' | 'pest'>(null);
 	const [input, setInput] = useState('');
 	const [result, setResult] = useState<string | null>(null);
+	const [isChatActive, setIsChatActive] = useState(false);
 
 	const handleAction = (type: 'crop' | 'market' | 'yield' | 'pest') => {
 		setModal(type);
@@ -74,8 +76,8 @@ export default function VoiceScreen() {
 			{/* Header */}
 			<View style={styles.header}>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<MaterialCommunityIcons name="account-voice" size={28} color="#6d28d9" style={{ marginRight: 8 }} />
-					<Text style={styles.headerTitle}>Voice Assistant</Text>
+					<AppLogoIcon size={28} style={{ marginRight: 8 }} />
+					<Text style={styles.headerTitle}>Your Companion</Text>
 				</View>
 				<View style={styles.langBadge}><Text style={styles.langBadgeText}>Hindi + English</Text></View>
 			</View>
@@ -83,10 +85,63 @@ export default function VoiceScreen() {
 				 {/* Voice Card */}
 				 <View style={styles.voiceCard}>
 					 <View style={styles.micCircle}>
-						 <MaterialCommunityIcons name="microphone" size={48} color="#6d28d9" />
+						 <MaterialCommunityIcons name="account-voice" size={48} color="#6d28d9" />
 					 </View>
 					 <Text style={styles.readyText}>Ready to Help</Text>
 					 <Text style={styles.subText}>Try our new AI Smart Tools below</Text>
+
+					 {/* Chatbox UI - Interactive */}
+					 <View
+						style={{
+							flexDirection: 'row',
+							alignItems: 'center',
+							backgroundColor: '#e5e7eb',
+							borderRadius: 18,
+							paddingHorizontal: 24,
+							paddingVertical: 14,
+							marginTop: 22,
+							marginLeft: 0,
+							marginRight: 0,
+							width: '100%',
+							alignSelf: 'center',
+							shadowColor: '#b0b0b0',
+							shadowOpacity: 0.5,
+							shadowRadius: 16,
+							shadowOffset: { width: 0, height: 0 },
+							elevation: 8,
+							borderWidth: 2,
+							borderColor: '#b0b0b0',
+						}}
+					 >
+						<MaterialCommunityIcons name="plus" size={24} color="#64748b" style={{ marginRight: 10 }} />
+						{!isChatActive ? (
+							<TouchableOpacity style={{ flex: 1 }} onPress={() => setIsChatActive(true)}>
+								<Text style={{ color: '#22223b', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.2 }}>
+									Ask anything
+								</Text>
+							</TouchableOpacity>
+						) : (
+							<input
+								style={{
+									flex: 1,
+									fontSize: 18,
+									border: 'none',
+									outline: 'none',
+									background: 'transparent',
+									color: '#22223b',
+									fontWeight: 'bold',
+								}}
+								placeholder="Type your question..."
+								autoFocus
+								value={input}
+								onChange={e => setInput(e.target.value)}
+								onBlur={() => { if (!input) setIsChatActive(false); }}
+							/>
+						)}
+						<TouchableOpacity>
+							<MaterialCommunityIcons name="microphone" size={24} color="#64748b" />
+						</TouchableOpacity>
+					</View>
 				 </View>
 				 <Text style={styles.quickTitle}>AI Smart Tools</Text>
 				 <View style={{ gap: 12, marginHorizontal: 8, marginTop: 4 }}>
