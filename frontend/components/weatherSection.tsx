@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// WeatherSection.tsx
+import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -6,50 +7,24 @@ interface WeatherValues {
   temperature: number;
   humidity: number;
   windSpeed: number;
-  precipitationIntensity: number; // use this for rainfall
+  precipitationIntensity: number;
 }
 
-const WeatherSection: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherValues | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+interface Props {
+  weather: WeatherValues | null;
+  loading: boolean;
+}
 
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const response = await fetch(
-          'https://api.tomorrow.io/v4/timelines?location=19.0760,72.8777&fields=temperature,humidity,windSpeed,precipitationIntensity&timesteps=1h&units=metric&apikey=KwkYiyncBsyJrB5Q1iCQyilihYH2FD6A'
-        );
-
-        const data = await response.json();
-
-        const latest = data.data.timelines[0].intervals[0].values;
-
-        setWeather({
-          temperature: latest.temperature,
-          humidity: latest.humidity,
-          windSpeed: latest.windSpeed,
-           precipitationIntensity: latest.precipitationIntensity ?? 0,
-        });
-      } catch (error) {
-        console.error('Error fetching weather:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWeather();
-  }, []);
-
+const WeatherSection: React.FC<Props> = ({ weather, loading }) => {
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 50 }} />;
+    return <ActivityIndicator size="large" color="#2563eb" style={{ marginTop: 16 }} />;
   }
 
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <MaterialCommunityIcons name="weather-partly-cloudy" size={20} color="#22223b" />
-        <Text style={styles.sectionTitle}>Weather (Last Updated: 2h ago)</Text>
-        <MaterialCommunityIcons name="white-balance-sunny" size={20} color="#fbbf24" style={{ marginLeft: 4 }} />
+        <Text style={styles.sectionTitle}>Weather (Last Updated)</Text>
       </View>
 
       <View style={styles.weatherRow}>
@@ -58,25 +33,21 @@ const WeatherSection: React.FC = () => {
           <Text style={styles.weatherValue}>{weather?.temperature.toFixed(1)}°C</Text>
           <Text style={styles.weatherLabel}>Temp</Text>
         </View>
-
         <View style={styles.weatherItem}>
           <MaterialCommunityIcons name="water-percent" size={20} color="#2563eb" />
           <Text style={styles.weatherValue}>{weather?.humidity.toFixed(0)}%</Text>
           <Text style={styles.weatherLabel}>Humidity</Text>
         </View>
-
         <View style={styles.weatherItem}>
           <MaterialCommunityIcons name="weather-windy" size={20} color="#64748b" />
           <Text style={styles.weatherValue}>{weather?.windSpeed.toFixed(1)} km/h</Text>
           <Text style={styles.weatherLabel}>Wind</Text>
         </View>
-
         <View style={styles.weatherItem}>
-          <MaterialCommunityIcons name="weather-sunny-alert" size={20} color="#fbbf24" />
+          <MaterialCommunityIcons name="weather-rainy" size={20} color="#fbbf24" />
           <Text style={styles.weatherValue}>
-  {weather?.precipitationIntensity && weather.precipitationIntensity > 0 ? 'High' : 'Low'}
-</Text>
-
+            {weather?.precipitationIntensity && weather.precipitationIntensity > 0 ? 'High' : 'Low'}
+          </Text>
           <Text style={styles.weatherLabel}>Rainfall</Text>
         </View>
       </View>
@@ -87,35 +58,11 @@ const WeatherSection: React.FC = () => {
 export default WeatherSection;
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 5,
-  },
-  weatherRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  weatherItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  weatherValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  weatherLabel: {
-    fontSize: 12,
-    color: '#555',
-  },
+  section: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, elevation: 1 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#22223b', marginLeft: 6 },
+  weatherRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  weatherItem: { alignItems: 'center', flex: 1 },
+  weatherValue: { fontSize: 15, fontWeight: 'bold', color: '#22223b', marginTop: 2 },
+  weatherLabel: { fontSize: 12, color: '#64748b' },
 });
-
