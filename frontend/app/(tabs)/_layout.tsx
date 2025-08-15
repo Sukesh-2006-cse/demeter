@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { CropLogoIcon } from '@/components/ui/CropLogoIcon';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -29,8 +30,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarLabel: ({ color }) => (
+            <>
+              <CropLogoIcon size={20} style={{ marginRight: 6, marginBottom: -2 }} />
+              <span style={{ color, fontWeight: 'bold', fontSize: 13 }}>Demeter</span>
+            </>
+          ),
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />, 
         }}
       />
   {/* Explore tab removed */}
