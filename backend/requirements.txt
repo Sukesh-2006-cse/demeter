@@ -1,0 +1,8 @@
+Flask==3.0.3
+numpy
+pandas
+scikit-learn
+joblib
+langdetect
+googletrans==4.0.0-rc1
+flask-cors
