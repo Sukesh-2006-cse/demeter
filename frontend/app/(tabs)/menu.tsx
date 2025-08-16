@@ -2,6 +2,7 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Footer from '../../components/Footer';
+import { useRouter } from 'expo-router';
 
 export default function MenuScreen() {
   return (
@@ -19,9 +20,7 @@ export default function MenuScreen() {
               <MaterialCommunityIcons name="account" size={40} color="#6d28d9" />
             </View>
             <View>
-              <Text style={styles.profileName}>राम प्रसाद शर्मा</Text>
-              <Text style={styles.profileMeta}>Farmer ID: DEM001234</Text>
-              <Text style={styles.profileMeta}>Village: खेतपुर, UP</Text>
+              <Text style={styles.profileName}>Farmer</Text>
             </View>
           </View>
         </View>
@@ -43,8 +42,18 @@ export default function MenuScreen() {
         </View>
         {/* Menu Options */}
         <View style={styles.menuCard}>
-          <MenuOption icon={<MaterialIcons name="person-outline" size={24} color="#64748b" />} label="Profile" />
-          <MenuOption icon={<MaterialIcons name="settings" size={24} color="#64748b" />} label="Settings" />
+          <MenuOption icon={<MaterialIcons name="home" size={24} color="#64748b" />} label="Home" route="/(tabs)" />
+          <MenuOption icon={<MaterialCommunityIcons name="leaf" size={24} color="#64748b" />} label="Crop Recommendation" route="/(tabs)/crop-recommendation" />
+          <MenuOption icon={<MaterialCommunityIcons name="finance" size={24} color="#64748b" />} label="Market Price Prediction" route="/(tabs)/market-price-prediction" />
+          <MenuOption icon={<MaterialCommunityIcons name="chart-bar" size={24} color="#64748b" />} label="Yield Prediction" route="/(tabs)/yield-prediction" />
+          <MenuOption icon={<MaterialCommunityIcons name="bug" size={24} color="#64748b" />} label="Pest Detection" route="/(tabs)/pest-detection" />
+          <MenuOption icon={<MaterialCommunityIcons name="alert" size={24} color="#64748b" />} label="Pest Risk Prediction" route="/(tabs)/pest-risk-prediction" />
+          <MenuOption icon={<MaterialCommunityIcons name="virus" size={24} color="#64748b" />} label="Disease Detection" route="/(tabs)/disease-detection" />
+          <MenuOption icon={<MaterialCommunityIcons name="compass" size={24} color="#64748b" />} label="Explore" route="/(tabs)/explore" />
+          <MenuOption icon={<MaterialCommunityIcons name="bell" size={24} color="#64748b" />} label="Alerts" route="/(tabs)/alerts" />
+          <MenuOption icon={<MaterialCommunityIcons name="account-group" size={24} color="#64748b" />} label="Community" route="/(tabs)/community" />
+          <MenuOption icon={<MaterialCommunityIcons name="microphone" size={24} color="#64748b" />} label="Voice" route="/(tabs)/voice" />
+          <MenuOption icon={<MaterialIcons name="settings" size={24} color="#64748b" />} label="Settings" route="/onboarding/ProfileSetupScreen" />
           <MenuOption icon={<MaterialCommunityIcons name="book-open-variant" size={24} color="#64748b" />} label="Crop Library" badgeType="new" />
           <MenuOption icon={<MaterialIcons name="cloud-download" size={24} color="#64748b" />} label="Offline Data" badgeType="pending" />
           <MenuOption icon={<MaterialIcons name="share" size={24} color="#64748b" />} label="Share App" />
@@ -62,7 +71,8 @@ type MenuOptionProps = {
   badgeType?: 'new' | 'pending';
 };
 
-function MenuOption({ icon, label, badgeType }: MenuOptionProps) {
+function MenuOption({ icon, label, badgeType, route }: MenuOptionProps & { route?: string }) {
+  const router = useRouter();
   let badge = null;
   if (badgeType === 'new') {
     badge = (
@@ -78,7 +88,7 @@ function MenuOption({ icon, label, badgeType }: MenuOptionProps) {
     );
   }
   return (
-    <TouchableOpacity style={styles.menuOption} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.menuOption} activeOpacity={0.7} onPress={() => route && router.push(route as any)}>
       <View style={styles.menuIcon}>{icon}</View>
       <Text style={styles.menuLabel}>{label}</Text>
       {badge && <View style={styles.menuBadge}>{badge}</View>}

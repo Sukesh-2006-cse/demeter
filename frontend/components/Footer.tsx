@@ -28,11 +28,11 @@ export default function Footer() {
           <Text style={pathname === '/(tabs)/voice' ? styles.footerLabelActive : styles.footerLabel}>Voice</Text>
         </TouchableOpacity>
       </Link>
-      {/* Community */}
-      <Link href="/(tabs)/community" asChild>
-        <TouchableOpacity style={pathname === '/(tabs)/community' ? styles.footerItemActive : styles.footerItem} activeOpacity={0.7} disabled={pathname === '/(tabs)/community'}>
-          <MaterialCommunityIcons name="account-group" size={28} color="#6d28d9" />
-          <Text style={pathname === '/(tabs)/community' ? styles.footerLabelActive : styles.footerLabel}>Community</Text>
+      {/* Pest Detection */}
+      <Link href="/(tabs)/pest-detection" asChild>
+        <TouchableOpacity style={pathname === '/(tabs)/pest-detection' ? styles.footerItemActive : styles.footerItem} activeOpacity={0.7} disabled={pathname === '/(tabs)/pest-detection'}>
+          <MaterialCommunityIcons name="bug" size={28} color="#f59e42" />
+          <Text style={pathname === '/(tabs)/pest-detection' ? styles.footerLabelActive : styles.footerLabel}>Pest</Text>
         </TouchableOpacity>
       </Link>
       {/* Menu */}
