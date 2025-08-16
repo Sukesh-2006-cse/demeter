@@ -29,15 +29,28 @@ except ImportError:
     from utils.translation import translation_service
 
 class Orchestrator:
-    def __init__(self, models_dir: str):
-        self.models_dir = models_dir
+    def __init__(self, models_dir=None):
+        # Handle both new and legacy initialization
+        base = os.path.dirname(os.path.dirname(__file__))
+        self.models_dir = models_dir or os.path.join(base, "models")
+        
         self.translator = Translator() if GOOGLETRANS_AVAILABLE else None
-        self.intent_clf = intent_classifier  # Use the advanced classifier
-        # load agents (factory)
-        self.agents = self._load_agents(models_dir)
-        # path for simple cache (daily sync)
-        self.cache_file = os.path.join(models_dir, "daily_cache.json")
+        
+        # Load agents
+        self.agents = self._load_agents(self.models_dir)
+        
+        # Lazy load intent classifier (support both advanced and simple)
+        try:
+            self.intent_clf = intent_classifier  # Use the advanced classifier
+        except:
+            # Fallback to simple classifier
+            from .intent_classifier import IntentClassifier
+            self.intent_clf = IntentClassifier()
+        
+        # Path for simple cache (daily sync)
+        self.cache_file = os.path.join(self.models_dir, "daily_cache.json")
         if not os.path.exists(self.cache_file):
+            os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
             with open(self.cache_file, "w") as f:
                 json.dump({}, f)
 
@@ -81,6 +94,11 @@ class Orchestrator:
             logger.error(f"Translation to English failed: {e}")
             return text
 
+    def to_english(self, text: str, src_lang: str) -> str:
+        """Legacy method - placeholder for translation"""
+        # For now we assume input in English or the agents accept English-like inputs
+        return text
+
     def from_en(self, text_en: str, dest_lang: str = "en") -> str:
         """Translate text from English to target language"""
         try:
@@ -98,6 +116,95 @@ class Orchestrator:
         except Exception as e:
             logger.error(f"Translation from English failed: {e}")
             return text_en
+
+    def nlg_template(self, intent: str, result: Dict[str, Any]) -> str:
+        """Simple templates per intent (English)"""
+        if intent == "crop" or intent == "crop_recommendation":
+            crop = result.get("top_crop") or result.get("recommended_crops") or result.get("recommendation") or "a suitable crop"
+            if isinstance(crop, list) and crop:
+                crop = crop[0]
+            return f"Recommended crop: {crop}."
+        
+        if intent == "market_yield":
+            price = result.get("predicted_price") or result.get("predicted_price_per_quintal")
+            yld = result.get("estimated_yield") or result.get("yield")
+            if price and yld:
+                return f"Expected yield: {yld}. Predicted price: {price}."
+            elif price:
+                return f"Predicted price: {price}."
+            elif yld:
+                return f"Expected yield: {yld}."
+            else:
+                return "Market analysis completed."
+        
+        if intent == "risk" or intent == "risk_assessment":
+            p = result.get("pest_probability") or result.get("pest_outbreak_probability") or result.get("risk_level")
+            adv = result.get("advice", "Monitor crops.")
+            if p:
+                return f"Risk level: {p}. Advice: {adv}"
+            else:
+                return f"Advice: {adv}"
+        
+        if intent == "finance" or intent == "finance_agent":
+            schemes = result.get("eligible_schemes", [])
+            if schemes:
+                return f"Eligible schemes: {', '.join(schemes)}"
+            else:
+                return "Financial information processed."
+        
+        if intent == "pest_detection":
+            pest = result.get("detected_pest") or result.get("pest_type")
+            confidence = result.get("confidence", "")
+            if pest:
+                return f"Detected pest: {pest}. Confidence: {confidence}"
+            else:
+                return "Pest analysis completed."
+        
+        # fallback - try to extract meaningful info
+        if isinstance(result, dict):
+            if 'message' in result:
+                return result['message']
+            elif 'recommendation' in result:
+                return f"Recommendation: {result['recommendation']}"
+            elif 'prediction' in result:
+                return f"Prediction: {result['prediction']}"
+        
+        return str(result)
+
+    def handle_query_simple(self, text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Simple query handler matching the original specification"""
+        context = context or {}
+        lang = self.detect_language(text)
+        text_en = self.to_english(text, lang)
+        
+        # Get intent using the classifier
+        if hasattr(self.intent_clf, 'predict_intent'):
+            intent = self.intent_clf.predict_intent(text_en)
+        else:
+            intent, _ = self.intent_clf.classify_intent(text_en, context)
+        
+        agent = self.agents.get(intent)
+        if not agent:
+            # fallback to crop
+            agent = self.agents.get("crop")
+        
+        # payload for the agent: include text_en and context
+        payload = {"text": text_en, "context": context}
+        result = agent.predict(payload) if agent else {"error": "No agent available"}
+        
+        # produce short answer via template
+        answer_en = self.nlg_template(intent, result)
+        
+        # we will integrate translation back to user's language later
+        answer_local = answer_en  # placeholder
+        
+        return {
+            "language": lang,
+            "intent": intent,
+            "source_agent": agent.name if agent else None,
+            "result": result,
+            "answer": answer_local
+        }
 
     def handle_query(self, text: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """
@@ -370,16 +477,4 @@ class Orchestrator:
                 }
         return status
 
-    # simple daily cache utilities
-    def update_cache(self, key, value):
-        with open(self.cache_file, "r+") as f:
-            data = json.load(f)
-            data[key] = value
-            f.seek(0)
-            json.dump(data, f)
-            f.truncate()
 
-    def read_cache(self, key):
-        with open(self.cache_file, "r") as f:
-            data = json.load(f)
-        return data.get(key)

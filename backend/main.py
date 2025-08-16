@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-# instantiate orchestrator (it will load agents)
-BASE_DIR = os.path.dirname(__file__)
-MODELS_DIR = os.path.join(BASE_DIR, "saved_models")
+# Ensure the core logic from specification is implemented
+BASE = os.path.dirname(__file__)
+MODELS_DIR = os.path.join(BASE, "saved_models")
 os.makedirs(MODELS_DIR, exist_ok=True)
 
 try:
@@ -27,91 +27,52 @@ except Exception as e:
 
 @app.get("/health")
 def health():
-    """Health check endpoint with agent status"""
+    """Health check endpoint - matches specification"""
     if orch is None:
         return jsonify({"status": "error", "message": "Orchestrator not initialized"}), 500
     
-    try:
-        agent_status = orch.get_agent_status()
-        return jsonify({
-            "status": "ok", 
-            "agents": list(orch.agents.keys()),
-            "agent_status": agent_status,
-            "total_agents": len(orch.agents)
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
+    return jsonify({"status": "ok", "agents": list(orch.agents.keys())})
 
 @app.post("/predict/<agent>")
 def predict_agent(agent):
-    """Direct agent prediction endpoint (legacy support)"""
+    """Direct agent prediction endpoint - matches specification"""
     if orch is None:
         return jsonify({"ok": False, "error": "Orchestrator not initialized"}), 500
         
     payload = request.get_json(force=True, silent=True) or {}
     if agent not in orch.agents:
-        return jsonify({
-            "ok": False, 
-            "error": "Unknown agent", 
-            "available": list(orch.agents.keys())
-        }), 400
+        return jsonify({"ok": False, "error": "Unknown agent", "available": list(orch.agents.keys())}), 400
     
     try:
         result = orch.agents[agent].predict(payload)
         return jsonify({"ok": True, "agent": agent, "result": result})
     except Exception as e:
-        logger.error(f"Error in agent {agent}: {e}")
         return jsonify({"ok": False, "error": str(e)}), 500
 
 @app.post("/query")
 def query():
     """
-    Enhanced main entrypoint for natural text queries with advanced intent classification.
-    
-    Body: { 
-        "text": "user query text",
-        "context": { 
-            "location": "optional location",
-            "image_data": "optional base64 image",
-            "user_preferences": {},
-            "additional_data": {}
-        }
-    }
+    Main entrypoint for natural text queries - matches specification exactly.
+    Body: { "text": "...", "context": { optional structured data } }
     """
     if orch is None:
         return jsonify({"ok": False, "error": "Orchestrator not initialized"}), 500
         
-    data = request.get_json(force=True, silent=True) or {}
-    text = data.get("text", "").strip()
-    context = data.get("context", {})
+    body = request.get_json(force=True, silent=True) or {}
+    text = body.get("text") or body.get("query") or ""
+    context = body.get("context", {})
     
     if not text:
-        return jsonify({
-            "ok": False, 
-            "error": "No text provided",
-            "example": {
-                "text": "What crop should I plant?",
-                "context": {"location": "Punjab", "soil_type": "clay"}
-            }
-        }), 400
+        return jsonify({"ok": False, "error": "no text"}), 400
     
     try:
-        logger.info(f"Processing query: '{text}' with context keys: {list(context.keys())}")
-        response = orch.handle_query(text, context)
-        
-        return jsonify({
-            "ok": True,
-            "query": text,
-            **response
-        })
+        # Use the handle_query method as specified
+        resp = orch.handle_query(text, context)
+        return jsonify({"ok": True, **resp})
         
     except Exception as e:
         logger.error(f"Error processing query: {e}")
-        return jsonify({
-            "ok": False, 
-            "error": str(e),
-            "query": text
-        }), 500
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 @app.post("/crop-recommendation")
 def crop_recommendation():

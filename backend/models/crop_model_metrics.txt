@@ -1,0 +1,6 @@
+Crop Model Accuracy: 0.9932
+Training samples: 1760
+Test samples: 440
+Number of features: 7
+Number of classes: 22
+Model parameters: n_estimators=200, max_depth=15

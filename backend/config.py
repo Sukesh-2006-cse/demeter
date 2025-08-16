@@ -18,7 +18,8 @@ FLASK_DEBUG = os.getenv("FLASK_DEBUG", "False").lower() == "true"
 
 # Model paths
 MODEL_PATHS = {
-    "crop_recommendation": CLOUD_MODELS_DIR / "crop_recommendation.pkl",
+    "crop_recommendation": MODELS_DIR / "crop_model.pkl",  # Updated to use new trained model
+    "crop_model": MODELS_DIR / "crop_model.pkl",  # Primary crop model path
     "market_price": CLOUD_MODELS_DIR / "market_price.pkl",
     "yield_model": CLOUD_MODELS_DIR / "yield_model.pkl",
     "pest_model": CLOUD_MODELS_DIR / "pest_model.onnx",
