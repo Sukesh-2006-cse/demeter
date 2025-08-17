@@ -1,0 +1,5 @@
+/* Remove orange focus ring and set to white for all select dropdowns */
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #f0fdf4 !important;
+}

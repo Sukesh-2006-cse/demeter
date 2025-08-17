@@ -1,82 +1,116 @@
-<<<<<<< HEAD
-import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
-import { MaterialCommunityIcons, MaterialIcons, Feather } from '@expo/vector-icons';
 
-=======
-// HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
->>>>>>> 1c536cb9a4e326c74a9552013ff83afab7e1f0c2
+import { useRouter } from 'expo-router';
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Platform, Animated } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { MaterialCommunityIcons, MaterialIcons, Feather } from '@expo/vector-icons';
+const heroImg = require('../../assets/images/react-logo.png');
+// If news.json is missing, comment out the import and the news section below, or provide a fallback.
+// import news from '../../data/news.json';
 import Footer from '../../components/Footer';
 import WeatherSection from '../../components/weatherSection';
 
-<<<<<<< HEAD
-const heroImg = require("../../assets/images/hi.png");
-
-const news = [
-  {
-    title: "Monsoon Arrives Early in South India",
-    summary: "Farmers prepare for an early sowing season as the monsoon hits Kerala ahead of schedule.",
-    img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=80&q=80",
-  },
-  {
-    title: "New Subsidy Scheme Announced",
-    summary: "Government introduces new credit subsidies for smallholder farmers.",
-    img: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=80&q=80",
-  },
-  {
-    title: "Pest Alert: Armyworm Spotted",
-    summary: "Agricultural department issues pest alert for maize crops in central India.",
-    img: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=80&q=80",
-  },
-];
-=======
 interface WeatherValues {
   temperature: number;
   humidity: number;
   windSpeed: number;
   precipitationIntensity: number;
 }
->>>>>>> 1c536cb9a4e326c74a9552013ff83afab7e1f0c2
 
 export default function HomeScreen() {
+  // ...existing code...
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.93,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 8,
+    }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 8,
+    }).start();
+  };
+  const router = useRouter();
   const [weather, setWeather] = useState<WeatherValues | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedState, setSelectedState] = useState('Andhra Pradesh');
+  const [news, setNews] = useState<any[]>([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const states = [
+    'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu and Kashmir','Ladakh','Puducherry','Chandigarh','Andaman and Nicobar Islands','Dadra and Nagar Haveli and Daman and Diu','Lakshadweep'
+  ];
+  const [showStatePicker, setShowStatePicker] = useState(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(
-          'https://api.tomorrow.io/v4/timelines?location=40.7128,-74.0060&fields=temperature,humidity,windSpeed,precipitationIntensity&timesteps=1h&units=metric&apikey=KwkYiyncBsyJrB5Q1iCQyilihYH2FD6A'
-
-        );
-        const data = await response.json();
-        const latest = data.data.timelines[0].intervals[0].values;
-
-        setWeather({
-          temperature: latest.temperature,
-          humidity: latest.humidity,
-          windSpeed: latest.windSpeed,
-          precipitationIntensity: latest.precipitationIntensity ?? 0,
-        });
+        // Use selectedState as location, fallback to 'Andhra Pradesh' if empty
+        const location = selectedState || 'Andhra Pradesh';
+        const res = await import('../../services/api');
+        const apiService = res.apiService;
+        const result = await apiService.getWeatherForecast(location, 1);
+        if (result.success && result.data) {
+          // Expecting result.data to have temperature, humidity, windSpeed, precipitationIntensity
+          setWeather({
+            temperature: result.data.temperature ?? 0,
+            humidity: result.data.humidity ?? 0,
+            windSpeed: result.data.windSpeed ?? 0,
+            precipitationIntensity: result.data.precipitationIntensity ?? 0,
+          });
+        } else {
+          setWeather(null);
+          console.error('Weather API error:', result.error || result.message);
+        }
       } catch (error) {
+        setWeather(null);
         console.error('Error fetching weather:', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchWeather();
-  }, []);
+  }, [selectedState]);
+
+  useEffect(() => {
+    async function fetchNews() {
+      setNewsLoading(true);
+      try {
+        // newsdata.io endpoint for India, English, agriculture, and state
+        const url = `https://newsdata.io/api/1/news?apikey=pub_9f317139e83b4424855bc2e212cbc476&country=in&language=en&q=agriculture farmer ${encodeURIComponent(selectedState)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log('newsdata.io response:', data);
+        if (data.status === 'error' || !Array.isArray(data.results)) {
+          setNews([]);
+          if (data.message) {
+            setNews([{ title: 'API Error', description: data.message }]);
+          }
+        } else {
+          setNews(data.results);
+        }
+      } catch (e) {
+        setNews([{ title: 'Network Error', description: String(e) }]);
+      } finally {
+        setNewsLoading(false);
+      }
+    }
+    fetchNews();
+  }, [selectedState]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header */}
         <View style={styles.headerCard}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
             <View style={{ marginRight: 10 }}>
               <View accessible accessibilityLabel="Demeter logo">
                 <View style={{ width: 36, height: 36, marginRight: 4 }}>
@@ -86,83 +120,105 @@ export default function HomeScreen() {
                 </View>
               </View>
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle}>Demeter</Text>
               <Text style={styles.headerSubtitle}>Agricultural AI Companion</Text>
             </View>
           </View>
-          <TouchableOpacity
-            accessibilityLabel="News"
-            style={styles.newsBtn}
-            onPress={() => {}}
-          >
-            <MaterialCommunityIcons name="newspaper-variant-outline" size={24} color="#22c55e" />
-          </TouchableOpacity>
+          {/* Advanced UI State Selector */}
+          <View style={styles.advancedStateBox}>
+            <Picker
+              selectedValue={selectedState}
+              onValueChange={value => setSelectedState(value)}
+              style={styles.advancedPicker}
+              dropdownIconColor="#2563eb"
+              accessibilityLabel="Select State for News"
+            >
+              <Picker.Item label="Select State" value="" color="#2563eb" />
+              {states.map(state => <Picker.Item key={state} label={state} value={state} />)}
+            </Picker>
+          </View>
         </View>
+  {/* State Picker Modal removed, now in header */}
 
-<<<<<<< HEAD
         {/* Hero */}
         <View style={styles.heroCard}>
           <Image
-            source={heroImg}
+            source={require('../../assets/images/hi.png')}
             style={styles.heroImg}
             accessible
             accessibilityLabel="Demeter hero"
           />
-          <TouchableOpacity style={styles.getStartedBtn} accessibilityLabel="Get Started">
-            <Text style={styles.getStartedText}>Get Started</Text>
-          </TouchableOpacity>
+          <Animated.View style={{
+            transform: [{ scale: scaleAnim }],
+            shadowColor: '#22c55e',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.35,
+            shadowRadius: 16,
+            elevation: 8,
+          }}>
+            <TouchableOpacity
+              style={styles.getStartedBtn}
+              accessibilityLabel="Get Started"
+              onPress={() => router.push('/onboarding/ChatBotScreen')}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.getStartedText}>Get Started</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
-        {/* Weather */}
-        <View style={styles.weatherCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-            <Feather name="sun" size={18} color="#fbbf24" style={{ marginRight: 6 }} accessibilityLabel="Weather sun icon" />
-            <Text style={styles.weatherTitle}>Weather (Last Updated: 2h ago)</Text>
-          </View>
-          <View style={styles.weatherRow}>
-            <View style={styles.weatherItem}>
-              <MaterialCommunityIcons name="thermometer" size={20} color="#22c55e" accessibilityLabel="Temperature" />
-              <Text style={styles.weatherValue}>28°C</Text>
-              <Text style={styles.weatherLabel}>Temp</Text>
-            </View>
-            <View style={styles.weatherItem}>
-              <Feather name="droplet" size={20} color="#38bdf8" accessibilityLabel="Humidity" />
-              <Text style={styles.weatherValue}>65%</Text>
-              <Text style={styles.weatherLabel}>Humidity</Text>
-            </View>
-            <View style={styles.weatherItem}>
-              <Feather name="wind" size={20} color="#a3e635" accessibilityLabel="Wind" />
-              <Text style={styles.weatherValue}>12 km/h</Text>
-              <Text style={styles.weatherLabel}>Wind</Text>
-            </View>
-            <View style={styles.weatherItem}>
-              <MaterialIcons name="wb-sunny" size={20} color="#fde68a" accessibilityLabel="UV Index" />
-              <Text style={styles.weatherValue}>5</Text>
-              <Text style={styles.weatherLabel}>UV</Text>
-            </View>
-          </View>
-        </View>
-=======
-        {/* Crop & Growth Stage */}
-        <View style={styles.row}>
-          <View style={[styles.card, { backgroundColor: '#e6f9ed' }]}>
-            <MaterialCommunityIcons name="sprout" size={28} color="#22c55e" />
-            <Text style={styles.cardLabel}>Current Crop</Text>
-            <Text style={styles.cardValue}>Wheat</Text>
-          </View>
-          <View style={[styles.card, { backgroundColor: '#e6f0fa' }]}>
-            <MaterialCommunityIcons name="calendar-star" size={28} color="#2563eb" />
-            <Text style={styles.cardLabel}>Growth Stage</Text>
-            <Text style={styles.cardValue}>Flowering</Text>
-          </View>
-        </View>
+  {/* Crop & Growth Stage removed as requested */}
+
 
         {/* Weather Section */}
         <WeatherSection weather={weather} loading={loading} />
->>>>>>> 1c536cb9a4e326c74a9552013ff83afab7e1f0c2
+
+  {/* State Selector removed from below weather, now in header */}
+
+        {/* News Section */}
+        <View style={{ marginTop: 8, marginBottom: 16, paddingHorizontal: 12 }}>
+          <View style={{ backgroundColor: '#e8f5e9', borderRadius: 16, padding: 0, shadowColor: '#388e3c', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#22c55e', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingVertical: 10, paddingHorizontal: 14 }}>
+              <MaterialCommunityIcons name="newspaper-variant-outline" size={22} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#fff', flex: 1 }}>Agri & Farmer News ({selectedState})</Text>
+            </View>
+            <View style={{ padding: 14 }}>
+              {newsLoading ? (
+                <ActivityIndicator size="large" color="#388e3c" style={{ marginVertical: 16 }} />
+              ) : news.length === 0 ? (
+                <Text style={{ color: '#888', fontSize: 15, textAlign: 'center', marginVertical: 16 }}>No news found.</Text>
+              ) : (
+                news.slice(0, 5).map((item, idx) => (
+                  <View key={idx} style={{
+                    backgroundColor: item.title === 'API Error' || item.title === 'Network Error' ? '#fee2e2' : '#fff',
+                    borderRadius: 12,
+                    marginBottom: 12,
+                    padding: 12,
+                    elevation: 1,
+                    borderWidth: item.title === 'API Error' || item.title === 'Network Error' ? 1 : 0,
+                    borderColor: item.title === 'API Error' || item.title === 'Network Error' ? '#ef4444' : 'transparent',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                  }}>
+                    <MaterialCommunityIcons name={item.title === 'API Error' || item.title === 'Network Error' ? 'alert-circle-outline' : 'leaf'} size={22} color={item.title === 'API Error' || item.title === 'Network Error' ? '#ef4444' : '#22c55e'} style={{ marginRight: 10, marginTop: 2 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontWeight: 'bold', fontSize: 15, color: item.title === 'API Error' || item.title === 'Network Error' ? '#ef4444' : '#222', marginBottom: 2 }}>{item.title}</Text>
+                      {item.source && <Text style={{ color: '#2563eb', fontSize: 13 }}>{item.source.name}</Text>}
+                      <Text style={{ color: '#555', fontSize: 13, marginTop: 2 }}>{item.description}</Text>
+                      {item.url && <Text style={{ color: '#388e3c', fontSize: 13, marginTop: 2 }} numberOfLines={1}>{item.url}</Text>}
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+          </View>
+        </View>
 
         {/* News */}
+        {/*
         <View style={styles.newsSection}>
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
             <MaterialCommunityIcons name="newspaper-variant-outline" size={18} color="#22c55e" style={{ marginRight: 6 }} accessibilityLabel="News icon" />
@@ -189,20 +245,14 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
+        */}
       </ScrollView>
-
-<<<<<<< HEAD
-      {/* Shared Footer */}
-=======
-      {/* Footer */}
->>>>>>> 1c536cb9a4e326c74a9552013ff83afab7e1f0c2
       <Footer />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
   headerCard: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -217,6 +267,48 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 2,
+  },
+  advancedStateBox: {
+    borderWidth: 2,
+    borderColor: '#166534', // dark green
+    borderRadius: 16,
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 10,
+    paddingVertical: 0,
+    marginLeft: 8,
+    minWidth: 140,
+    maxWidth: 170,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#22c55e', // lighter green for shine
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 4,
+    height: 40,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  advancedStateLabel: {
+    color: '#2563eb',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  advancedPicker: {
+    width: 140,
+    height: 40,
+    color: '#222',
+    fontSize: 15,
+    backgroundColor: 'transparent',
+    borderRadius: 16,
+    borderWidth: 0,
+    marginTop: 0,
+    paddingLeft: 8,
+    paddingRight: 8,
+    paddingVertical: 0,
+    textAlignVertical: 'center',
+    borderColor: 'transparent', // force no black border
   },
   headerTitle: {
     fontSize: 20,
@@ -273,137 +365,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-  weatherCard: {
-    backgroundColor: "#f0fdf4",
-    borderRadius: 18,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  weatherTitle: {
-    fontWeight: "bold",
-    color: "#166534",
-    fontSize: 15,
-  },
-  weatherRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4,
-  },
-  weatherItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  weatherIcon: {
-    fontSize: 20,
-    marginBottom: 2,
-  },
-  weatherValue: {
-    fontWeight: "bold",
-    color: "#166534",
-    fontSize: 15,
-  },
-  weatherLabel: {
-    fontSize: 12,
-    color: "#4ade80",
-    marginTop: 2,
-  },
-  newsSection: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  newsTitle: {
-    fontWeight: "bold",
-    color: "#166534",
-    fontSize: 15,
-  },
-  newsCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0fdf4",
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 10,
-  },
-  newsImg: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  newsCardTitle: {
-    fontWeight: "bold",
-    color: "#166534",
-    fontSize: 14,
-  },
-  newsCardSummary: {
-    color: "#4ade80",
-    fontSize: 12,
-    marginTop: 2,
-  },
-  footerNav: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "#fff", // Add white background
-    borderTopColor: "#e5e7eb",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    maxWidth: 480,
-    alignSelf: "center",
-    elevation: 8,
-    zIndex: 10,
-  },
-  footerBtn: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footerIcon: {
-    fontSize: 22,
-    color: "#22c55e",
-  },
-  footerLabel: {
-    fontSize: 11,
-    color: "#374151",
-    marginTop: 4,
-  },
-=======
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 32 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#22223b' },
-  subtitle: { fontSize: 14, color: '#64748b' },
-  offlineBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef3c7', borderRadius: 8, paddingHorizontal: 8 },
-  offlineText: { color: '#d97706', fontWeight: 'bold', marginLeft: 4, fontSize: 12 },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   card: { flex: 1, alignItems: 'center', padding: 16, borderRadius: 12, marginHorizontal: 4, elevation: 1 },
   cardLabel: { fontSize: 13, color: '#64748b', marginTop: 8 },
   cardValue: { fontSize: 16, fontWeight: 'bold', color: '#22223b', marginTop: 2 },
-  section: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, elevation: 1 },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#22223b', marginBottom: 12 },
-  healthRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  healthLabel: { fontSize: 14, color: '#22223b', marginLeft: 8, width: 90 },
-  progressBarBg: { flex: 1, height: 8, backgroundColor: '#e5e7eb', borderRadius: 4, marginHorizontal: 8, overflow: 'hidden' },
-  progressBar: { height: 8, borderRadius: 4 },
-  healthStatusGood: { color: '#2563eb', fontWeight: 'bold', fontSize: 13, width: 50 },
-  healthStatusExcellent: { color: '#22c55e', fontWeight: 'bold', fontSize: 13, width: 70 },
-  healthStatusLow: { color: '#eab308', fontWeight: 'bold', fontSize: 13, width: 40 },
-  recentAction: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0fdf4', borderRadius: 8, padding: 10, marginTop: 8 },
-  recentActionTitle: { fontWeight: 'bold', color: '#22223b', fontSize: 14 },
-  recentActionSubtitle: { color: '#64748b', fontSize: 12, marginTop: 2 },
->>>>>>> 1c536cb9a4e326c74a9552013ff83afab7e1f0c2
 });
+

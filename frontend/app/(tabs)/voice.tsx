@@ -117,12 +117,80 @@ export default function VoiceScreen() {
 					borderColor: '#bda6f7',
 				}}>
 					<Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-						<TouchableOpacity activeOpacity={0.7} onPress={() => router.push({ pathname: '/onboarding/ChatBotScreen', params: { blinkMic: '1' } })} accessibilityLabel="Tap to speak">
+						<TouchableOpacity
+							activeOpacity={0.7}
+							onPress={() => setIsChatActive(true)}
+							accessibilityLabel="Tap to speak"
+						>
 							<MaterialCommunityIcons name="microphone" size={56} color="#6d28d9" />
 						</TouchableOpacity>
 					</Animated.View>
 				</Animated.View>
 				<Text style={{ color: '#6d28d9', fontWeight: 'bold', marginTop: 18, fontSize: 16 }}>Tap to Speak</Text>
+				{/* Audio Recording Modal */}
+				   {isChatActive && (
+					   <View style={{
+						   position: 'absolute',
+						   top: 0,
+						   left: 0,
+						   right: 0,
+						   bottom: 0,
+						   backgroundColor: 'rgba(0,0,0,0.10)',
+						   zIndex: 20,
+						   flex: 1,
+						   justifyContent: 'center',
+						   alignItems: 'center',
+					   }}>
+						   <View style={{
+							   backgroundColor: '#fff',
+							   borderRadius: 32,
+							   paddingHorizontal: 28,
+							   paddingVertical: 22,
+							   alignItems: 'center',
+							   width: 260,
+							   maxWidth: '90%',
+							   minHeight: 210,
+							   shadowColor: '#000',
+							   shadowOpacity: 0.13,
+							   shadowRadius: 18,
+							   shadowOffset: { width: 0, height: 8 },
+							   elevation: 16,
+							   marginTop: 16,
+						   }}>
+							   <MaterialCommunityIcons name="microphone" size={40} color="#e53935" style={{ marginBottom: 8 }} />
+							   {/* Red waveform bars */}
+							   <View style={{ flexDirection: 'row', gap: 7, marginBottom: 16, marginTop: 2 }}>
+								   {[0,1,2].map(i => (
+									   <View key={i} style={{
+										   width: 13,
+										   height: 26,
+										   borderRadius: 6,
+										   backgroundColor: ['#f8bbbd','#f06263','#b71c1c'][i],
+										   marginHorizontal: 2,
+									   }} />
+								   ))}
+							   </View>
+							   <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 2, color: '#222', letterSpacing: 0.1, textAlign: 'center' }}>Listening...</Text>
+							   <Text style={{ color: '#888', marginBottom: 16, textAlign: 'center', fontSize: 14 }}>Speak now</Text>
+							   <TouchableOpacity
+								   style={{
+									   backgroundColor: '#e53935',
+									   borderRadius: 14,
+									   paddingHorizontal: 24,
+									   paddingVertical: 8,
+									   marginTop: 2,
+									   shadowColor: '#e53935',
+									   shadowOpacity: 0.18,
+									   shadowRadius: 8,
+									   elevation: 4,
+								   }}
+								   onPress={() => setIsChatActive(false)}
+							   >
+								   <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Stop</Text>
+							   </TouchableOpacity>
+						   </View>
+					   </View>
+				   )}
 			</View>
 			<ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
 				 {/* Voice Card */}
