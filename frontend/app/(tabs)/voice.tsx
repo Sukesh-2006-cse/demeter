@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppLogoIcon } from '../../components/ui/AppLogoIcon';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { Animated, Easing, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Footer from '../../components/Footer';
+import { useRouter } from 'expo-router';
 
 // FeatureCard component for modern UI
 type FeatureCardProps = {
@@ -47,10 +48,29 @@ function FeatureCard({ icon, title, subtitle, color, onPress }: FeatureCardProps
 }
 
 export default function VoiceScreen() {
+	const router = useRouter();
 	const [modal, setModal] = useState<null | 'crop' | 'market' | 'yield' | 'pest'>(null);
 	const [input, setInput] = useState('');
 	const [result, setResult] = useState<string | null>(null);
 	const [isChatActive, setIsChatActive] = useState(false);
+
+	// Animated voice icon and ring
+	const scaleAnim = useRef(new Animated.Value(1)).current;
+	const ringAnim = useRef(new Animated.Value(1)).current;
+	useEffect(() => {
+		Animated.loop(
+			Animated.parallel([
+				Animated.sequence([
+					Animated.timing(scaleAnim, { toValue: 1.18, duration: 1400, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+					Animated.timing(scaleAnim, { toValue: 1, duration: 1400, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+				]),
+				Animated.sequence([
+					Animated.timing(ringAnim, { toValue: 1.35, duration: 1400, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+					Animated.timing(ringAnim, { toValue: 1, duration: 1400, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+				]),
+			])
+		).start();
+	}, [scaleAnim, ringAnim]);
 
 	const handleAction = (type: 'crop' | 'market' | 'yield' | 'pest') => {
 		setModal(type);
@@ -76,22 +96,114 @@ export default function VoiceScreen() {
 			{/* Header */}
 			<View style={styles.header}>
 				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<AppLogoIcon size={28} style={{ marginRight: 8 }} />
+					{/* Changed logo to microphone icon */}
+					<MaterialCommunityIcons name="microphone" size={28} color="#6d28d9" style={{ marginRight: 8 }} />
 					<Text style={styles.headerTitle}>Your Companion</Text>
 				</View>
 				<View style={styles.langBadge}><Text style={styles.langBadgeText}>Hindi + English</Text></View>
 			</View>
+			{/* Animated Voice Icon below header */}
+			<View style={{ alignItems: 'center', marginTop: 18, marginBottom: 8 }}>
+				<Animated.View style={{
+					justifyContent: 'center',
+					alignItems: 'center',
+					width: 90,
+					height: 90,
+					borderRadius: 45,
+					backgroundColor: '#f3f4f6',
+					marginBottom: 0,
+					transform: [{ scale: ringAnim }],
+					borderWidth: 3,
+					borderColor: '#bda6f7',
+				}}>
+					<Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+						<TouchableOpacity
+							activeOpacity={0.7}
+							onPress={() => setIsChatActive(true)}
+							accessibilityLabel="Tap to speak"
+						>
+							<MaterialCommunityIcons name="microphone" size={56} color="#6d28d9" />
+						</TouchableOpacity>
+					</Animated.View>
+				</Animated.View>
+				<Text style={{ color: '#6d28d9', fontWeight: 'bold', marginTop: 18, fontSize: 16 }}>Tap to Speak</Text>
+				{/* Audio Recording Modal */}
+				   {isChatActive && (
+					   <View style={{
+						   position: 'absolute',
+						   top: 0,
+						   left: 0,
+						   right: 0,
+						   bottom: 0,
+						   backgroundColor: 'rgba(0,0,0,0.10)',
+						   zIndex: 20,
+						   flex: 1,
+						   justifyContent: 'center',
+						   alignItems: 'center',
+					   }}>
+						   <View style={{
+							   backgroundColor: '#fff',
+							   borderRadius: 32,
+							   paddingHorizontal: 28,
+							   paddingVertical: 22,
+							   alignItems: 'center',
+							   width: 260,
+							   maxWidth: '90%',
+							   minHeight: 210,
+							   shadowColor: '#000',
+							   shadowOpacity: 0.13,
+							   shadowRadius: 18,
+							   shadowOffset: { width: 0, height: 8 },
+							   elevation: 16,
+							   marginTop: 16,
+						   }}>
+							   <MaterialCommunityIcons name="microphone" size={40} color="#e53935" style={{ marginBottom: 8 }} />
+							   {/* Red waveform bars */}
+							   <View style={{ flexDirection: 'row', gap: 7, marginBottom: 16, marginTop: 2 }}>
+								   {[0,1,2].map(i => (
+									   <View key={i} style={{
+										   width: 13,
+										   height: 26,
+										   borderRadius: 6,
+										   backgroundColor: ['#f8bbbd','#f06263','#b71c1c'][i],
+										   marginHorizontal: 2,
+									   }} />
+								   ))}
+							   </View>
+							   <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 2, color: '#222', letterSpacing: 0.1, textAlign: 'center' }}>Listening...</Text>
+							   <Text style={{ color: '#888', marginBottom: 16, textAlign: 'center', fontSize: 14 }}>Speak now</Text>
+							   <TouchableOpacity
+								   style={{
+									   backgroundColor: '#e53935',
+									   borderRadius: 14,
+									   paddingHorizontal: 24,
+									   paddingVertical: 8,
+									   marginTop: 2,
+									   shadowColor: '#e53935',
+									   shadowOpacity: 0.18,
+									   shadowRadius: 8,
+									   elevation: 4,
+								   }}
+								   onPress={() => setIsChatActive(false)}
+							   >
+								   <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Stop</Text>
+							   </TouchableOpacity>
+						   </View>
+					   </View>
+				   )}
+			</View>
 			<ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
 				 {/* Voice Card */}
 				 <View style={styles.voiceCard}>
-					 <View style={styles.micCircle}>
-						 <MaterialCommunityIcons name="account-voice" size={48} color="#6d28d9" />
-					 </View>
+					 {/* Removed man speaking icon, replaced by animated voice icon above */}
 					 <Text style={styles.readyText}>Ready to Help</Text>
 					 <Text style={styles.subText}>Try our new AI Smart Tools below</Text>
 
+
 					 {/* Chatbox UI - Interactive */}
-					 <View
+					<TouchableOpacity
+						activeOpacity={0.85}
+						onPress={() => router.push('/onboarding/ChatBotScreen')}
 						style={{
 							flexDirection: 'row',
 							alignItems: 'center',
@@ -112,36 +224,13 @@ export default function VoiceScreen() {
 							borderWidth: 2,
 							borderColor: '#b0b0b0',
 						}}
-					 >
+					>
 						<MaterialCommunityIcons name="plus" size={24} color="#64748b" style={{ marginRight: 10 }} />
-						{!isChatActive ? (
-							<TouchableOpacity style={{ flex: 1 }} onPress={() => setIsChatActive(true)}>
-								<Text style={{ color: '#22223b', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.2 }}>
-									Ask anything
-								</Text>
-							</TouchableOpacity>
-						) : (
-							<input
-								style={{
-									flex: 1,
-									fontSize: 18,
-									border: 'none',
-									outline: 'none',
-									background: 'transparent',
-									color: '#22223b',
-									fontWeight: 'bold',
-								}}
-								placeholder="Type your question..."
-								autoFocus
-								value={input}
-								onChange={e => setInput(e.target.value)}
-								onBlur={() => { if (!input) setIsChatActive(false); }}
-							/>
-						)}
-						<TouchableOpacity>
-							<MaterialCommunityIcons name="microphone" size={24} color="#64748b" />
-						</TouchableOpacity>
-					</View>
+						<Text style={{ color: '#22223b', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.2, flex: 1 }}>
+							Ask anything
+						</Text>
+						<MaterialCommunityIcons name="microphone" size={24} color="#64748b" />
+					</TouchableOpacity>
 				 </View>
 				 <Text style={styles.quickTitle}>AI Smart Tools</Text>
 				 <View style={{ gap: 12, marginHorizontal: 8, marginTop: 4 }}>
@@ -373,5 +462,24 @@ const styles = StyleSheet.create({
 		color: '#64748b',
 		fontSize: 13,
 		marginTop: 2,
+	},
+	chatBotBtn: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: '#e0f2fe',
+		borderRadius: 16,
+		paddingHorizontal: 20,
+		paddingVertical: 12,
+		marginTop: 16,
+		shadowColor: '#000',
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 4,
+	},
+	chatBotBtnText: {
+		color: '#0d9488',
+		fontWeight: 'bold',
+		fontSize: 16,
 	},
 });
