@@ -225,6 +225,11 @@ class Orchestrator:
             lang = self.detect_language(text)
             text_en = self.to_en(text, src=lang)
             
+            logger.info(f"Language detected: {lang}")
+            if lang != 'en':
+                logger.info(f"Original query: {text}")
+                logger.info(f"Translated query: {text_en}")
+            
             # 2) Advanced intent classification with confidence
             intent, confidence = self.intent_clf.classify_intent(text_en, context)
             logger.info(f"Classified intent: {intent} (confidence: {confidence:.2f})")
@@ -245,16 +250,23 @@ class Orchestrator:
             }
             
             # 5) Route to appropriate agent
+            logger.info(f"Routing intent '{intent}' (confidence: {confidence:.2f}) with parameters: {list(parameters.keys())}")
             agent_result = self._route_to_agent(intent, payload)
             
-            # 6) Generate response
-            response = self._generate_response(
-                agent_result, intent, lang, confidence, parameters, context
-            )
+            # 6) Generate natural language response using mT5
+            if lang != "en" and agent_result.get('success', False):
+                # Use mT5 to generate natural response in user's language
+                natural_answer = translation_service.generate_natural_response(
+                    agent_result, intent, lang, text
+                )
+            else:
+                # For English or failed requests, use simple response generation
+                natural_answer = self._generate_simple_answer(agent_result, intent)
             
-            # 7) Translate response back to original language
-            if lang != "en":
-                response = translation_service.translate_response(response, lang)
+            # 7) Generate comprehensive response
+            response = self._generate_response(
+                agent_result, intent, lang, confidence, parameters, context, natural_answer
+            )
             
             return response
             
@@ -276,9 +288,47 @@ class Orchestrator:
             
             agent_name = intent_to_agent.get(intent)
             
+            # Force routing to crop agent for crop_recommendation intent (bypass confidence threshold)
+            if intent == 'crop_recommendation':
+                agent_name = 'crop'
+                logger.info(f"Forcing route to crop agent for crop_recommendation intent (confidence: {payload['confidence']:.2f})")
+            
             if agent_name and agent_name in self.agents:
                 agent = self.agents[agent_name]
                 logger.info(f"Routing to agent: {agent_name}")
+                
+                # Normalize parameters for crop agent
+                if agent_name == 'crop':
+                    context = payload.get('context', {})
+                    parameters = payload.get('parameters', {})
+                    
+                    # Merge parameters into context for crop agent
+                    for key, value in parameters.items():
+                        if key not in context and value is not None:
+                            context[key] = value
+                    
+                    # Normalize parameter names to match ML model expectations
+                    # Model expects: ["N", "P", "K", "temperature", "humidity", "ph", "rain"]
+                    param_mapping = {
+                        'rainfall': 'rain',
+                        'nitrogen': 'N',
+                        'phosphorus': 'P', 
+                        'potassium': 'K',
+                        'temp': 'temperature',
+                        'pH': 'ph'
+                    }
+                    
+                    for old_key, new_key in param_mapping.items():
+                        if old_key in context and new_key not in context:
+                            context[new_key] = context[old_key]
+                            logger.debug(f"Normalized parameter: {old_key} -> {new_key}")
+                    
+                    # Also ensure reverse mapping for compatibility
+                    if 'rain' in context and 'rainfall' not in context:
+                        context['rainfall'] = context['rain']
+                    
+                    payload['context'] = context
+                    logger.debug(f"Normalized context for crop agent: {context}")
                 
                 # Call agent with enhanced payload
                 if hasattr(agent, 'process_query'):
@@ -350,9 +400,28 @@ class Orchestrator:
             ]
         }
 
+    def _generate_simple_answer(self, agent_result: Dict[str, Any], intent: str) -> str:
+        """Generate simple English answer from agent result"""
+        if 'message' in agent_result:
+            return agent_result['message']
+        elif intent == 'crop_recommendation':
+            crop = agent_result.get('top_crop', 'a suitable crop')
+            return f"I recommend growing {crop} based on your conditions."
+        elif intent == 'market_yield':
+            return "Here's the market and yield analysis for your query."
+        elif intent == 'risk_assessment':
+            return "I've analyzed the agricultural risks for your situation."
+        elif intent == 'pest_detection':
+            return "I've identified potential pest issues in your image."
+        elif intent == 'finance_agent':
+            return "Here's information about agricultural financing options."
+        else:
+            return "I've processed your agricultural query."
+
     def _generate_response(self, agent_result: Dict[str, Any], intent: str, 
                          language: str, confidence: float, 
-                         parameters: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+                         parameters: Dict[str, Any], context: Dict[str, Any], 
+                         natural_answer: str = None) -> Dict[str, Any]:
         """Generate comprehensive response"""
         
         response = {
@@ -366,8 +435,10 @@ class Orchestrator:
             'timestamp': self._get_timestamp()
         }
         
-        # Add main message/answer
-        if 'message' in agent_result:
+        # Add main message/answer (use natural answer if provided)
+        if natural_answer:
+            response['answer'] = natural_answer
+        elif 'message' in agent_result:
             response['answer'] = agent_result['message']
         elif 'recommendations' in agent_result:
             response['answer'] = self._format_recommendations(agent_result['recommendations'])

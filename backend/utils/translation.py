@@ -1,5 +1,5 @@
 """
-Multilingual translation utilities
+Multilingual translation utilities using mT5 model
 """
 import os
 from typing import Dict, Any, Optional, List
@@ -9,7 +9,19 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Handle googletrans import gracefully for Python 3.13 compatibility
+# Import required libraries for mT5 translation
+try:
+    from transformers import MT5ForConditionalGeneration, MT5Tokenizer
+    from langdetect import detect
+    MT5_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Required libraries not available: {e}. Translation features will be limited.")
+    MT5ForConditionalGeneration = None
+    MT5Tokenizer = None
+    detect = None
+    MT5_AVAILABLE = False
+
+# Fallback to googletrans if mT5 is not available
 try:
     from googletrans import Translator
     GOOGLETRANS_AVAILABLE = True
@@ -19,28 +31,126 @@ except ImportError as e:
     GOOGLETRANS_AVAILABLE = False
 
 class TranslationService:
-    """Service for handling multilingual translations"""
+    """Service for handling multilingual translations using mT5 model"""
     
     def __init__(self):
-        self.translator = Translator() if GOOGLETRANS_AVAILABLE else None
+        self.mt5_model = None
+        self.mt5_tokenizer = None
+        self.fallback_translator = Translator() if GOOGLETRANS_AVAILABLE else None
+        
+        # Initialize mT5 model
+        if MT5_AVAILABLE:
+            try:
+                model_name = "google/mt5-small"
+                logger.info(f"Loading mT5 model: {model_name}")
+                self.mt5_tokenizer = MT5Tokenizer.from_pretrained(model_name)
+                self.mt5_model = MT5ForConditionalGeneration.from_pretrained(model_name)
+                logger.info("mT5 model loaded successfully")
+            except Exception as e:
+                logger.error(f"Failed to load mT5 model: {e}")
+                self.mt5_model = None
+                self.mt5_tokenizer = None
+        
         self.supported_languages = {
             'en': 'English',
-            'es': 'Spanish', 
-            'fr': 'French',
-            'pt': 'Portuguese',
+            'ta': 'Tamil',
+            'te': 'Telugu',
+            'kn': 'Kannada',
+            'ml': 'Malayalam',
             'hi': 'Hindi',
-            'zh': 'Chinese',
-            'ar': 'Arabic',
-            'sw': 'Swahili',
-            'am': 'Amharic'
+            'fr': 'French',
+            'es': 'Spanish',
+            'ru': 'Russian'
         }
         self.cache = {}
         self.cache_file = Path(__file__).parent.parent / "data" / "translation_cache.json"
         self._load_cache()
     
+    def translate_with_mt5(self, text: str, target_lang: str = "en") -> str:
+        """
+        Translate text to target language using mT5 model.
+        
+        Args:
+            text: Text to translate
+            target_lang: Target language code
+            
+        Returns:
+            Translated text
+        """
+        if not self.mt5_model or not self.mt5_tokenizer:
+            logger.warning("mT5 model not available")
+            return text
+        
+        try:
+            # Detect source language
+            source_lang = self.detect_language(text)
+            
+            # Skip translation if already in target language
+            if source_lang == target_lang:
+                return text
+            
+            # Create translation task prefix
+            task_prefix = f"translate {source_lang} to {target_lang}: "
+            
+            # Tokenize input
+            input_ids = self.mt5_tokenizer(
+                task_prefix + text, 
+                return_tensors="pt", 
+                max_length=512, 
+                truncation=True
+            ).input_ids
+            
+            # Generate translation
+            outputs = self.mt5_model.generate(
+                input_ids, 
+                max_length=128, 
+                num_beams=4, 
+                early_stopping=True,
+                do_sample=False
+            )
+            
+            # Decode the output
+            translated_text = self.mt5_tokenizer.decode(outputs[0], skip_special_tokens=True)
+            
+            # Clean up the output (remove task prefix if present)
+            if translated_text.startswith(task_prefix):
+                translated_text = translated_text[len(task_prefix):].strip()
+            
+            return translated_text
+            
+        except Exception as e:
+            logger.error(f"mT5 translation error: {e}")
+            return text
+
+    def detect_language(self, text: str) -> str:
+        """
+        Detect the language of input text using langdetect.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            Detected language code
+        """
+        if not text or not text.strip():
+            return 'en'
+        
+        try:
+            if detect is not None:
+                detected_lang = detect(text)
+                # Return detected language if supported, otherwise default to English
+                return detected_lang if detected_lang in self.supported_languages else 'en'
+            else:
+                logger.warning("Language detection not available, defaulting to English")
+                return 'en'
+            
+        except Exception as e:
+            logger.error(f"Language detection error: {e}")
+            return 'en'
+
     def translate_text(self, text: str, target_language: str, source_language: str = 'auto') -> str:
         """
-        Translate text to target language
+        Translate text to target language using mT5 model with fallback to googletrans
         
         Args:
             text: Text to translate
@@ -58,6 +168,10 @@ class TranslationService:
             logger.warning(f"Unsupported language: {target_language}")
             return text
         
+        # Auto-detect source language if needed
+        if source_language == 'auto':
+            source_language = self.detect_language(text)
+        
         # Return original if already in target language
         if source_language == target_language:
             return text
@@ -67,25 +181,99 @@ class TranslationService:
         if cache_key in self.cache:
             return self.cache[cache_key]
         
+        translated_text = text
+        
         try:
-            # Perform translation if translator is available
-            if self.translator is not None:
-                result = self.translator.translate(text, dest=target_language, src=source_language)
+            # Try mT5 translation first
+            if self.mt5_model and self.mt5_tokenizer:
+                translated_text = self.translate_with_mt5(text, target_language)
+                logger.debug(f"Used mT5 for translation: {text[:50]}... -> {translated_text[:50]}...")
+            
+            # Fallback to googletrans if mT5 fails or is not available
+            elif self.fallback_translator is not None:
+                result = self.fallback_translator.translate(text, dest=target_language, src=source_language)
                 translated_text = result.text
-                
-                # Cache the result
-                self.cache[cache_key] = translated_text
-                self._save_cache()
-                
-                return translated_text
+                logger.debug(f"Used googletrans for translation: {text[:50]}... -> {translated_text[:50]}...")
+            
             else:
-                logger.warning("Translation service not available, returning original text")
+                logger.warning("No translation service available, returning original text")
                 return text
+            
+            # Cache the result
+            self.cache[cache_key] = translated_text
+            self._save_cache()
+            
+            return translated_text
             
         except Exception as e:
             logger.error(f"Translation error: {e}")
             return text  # Return original text on error
     
+    def generate_natural_response(self, agent_result: Dict[str, Any], intent: str, target_language: str, original_query: str) -> str:
+        """
+        Generate natural language response using mT5 based on agent results
+        
+        Args:
+            agent_result: Results from the sub-agent
+            intent: The classified intent
+            target_language: Target language for response
+            original_query: Original user query
+            
+        Returns:
+            Natural language response in target language
+        """
+        try:
+            # Create a structured prompt for mT5 to generate natural response
+            if intent == 'crop_recommendation':
+                crop = agent_result.get('top_crop', 'unknown crop')
+                confidence = agent_result.get('confidence', 0)
+                
+                # Create English template
+                if confidence > 0.7:
+                    english_response = f"Based on your soil and climate conditions, I recommend growing {crop}. This recommendation has high confidence."
+                elif confidence > 0.5:
+                    english_response = f"I suggest growing {crop} based on your conditions, though you may want to consider other factors as well."
+                else:
+                    english_response = f"Based on basic analysis, {crop} might be suitable for your conditions, but I recommend consulting with local agricultural experts."
+                    
+            elif intent == 'market_yield':
+                price = agent_result.get('predicted_price', 'unknown')
+                yield_val = agent_result.get('estimated_yield', 'unknown')
+                english_response = f"Expected yield: {yield_val}. Predicted market price: {price}."
+                
+            elif intent == 'risk_assessment':
+                risk_level = agent_result.get('risk_level', 'moderate')
+                advice = agent_result.get('advice', 'Monitor your crops regularly.')
+                english_response = f"Risk assessment shows {risk_level} risk level. Advice: {advice}"
+                
+            elif intent == 'pest_detection':
+                pest = agent_result.get('detected_pest', 'unknown pest')
+                confidence = agent_result.get('confidence', 0)
+                english_response = f"Detected pest: {pest} (confidence: {confidence:.1%}). Please take appropriate measures."
+                
+            elif intent == 'finance_agent':
+                schemes = agent_result.get('eligible_schemes', [])
+                if schemes:
+                    english_response = f"You may be eligible for these financial schemes: {', '.join(schemes[:3])}."
+                else:
+                    english_response = "I found some general agricultural finance information for you."
+            else:
+                # Fallback for unknown intents
+                english_response = agent_result.get('message', 'I have processed your request.')
+            
+            # If target language is English, return as is
+            if target_language == 'en':
+                return english_response
+            
+            # Use translation service (prioritize googletrans for speed)
+            return self.translate_text(english_response, target_language)
+                
+        except Exception as e:
+            logger.error(f"Error generating natural response: {e}")
+            # Fallback to translation
+            english_fallback = agent_result.get('message', 'I have processed your request.')
+            return self.translate_text(english_fallback, target_language)
+
     def translate_response(self, response: Dict[str, Any], target_language: str) -> Dict[str, Any]:
         """
         Translate response dictionary to target language
@@ -147,33 +335,7 @@ class TranslationService:
         else:
             return obj
     
-    def detect_language(self, text: str) -> str:
-        """
-        Detect the language of input text
-        
-        Args:
-            text: Text to analyze
-            
-        Returns:
-            Detected language code
-        """
-        if not text or not text.strip():
-            return 'en'
-        
-        try:
-            if self.translator is not None:
-                detection = self.translator.detect(text)
-                detected_lang = detection.lang
-                
-                # Return detected language if supported, otherwise default to English
-                return detected_lang if detected_lang in self.supported_languages else 'en'
-            else:
-                logger.warning("Translation service not available, defaulting to English")
-                return 'en'
-            
-        except Exception as e:
-            logger.error(f"Language detection error: {e}")
-            return 'en'
+
     
     def get_supported_languages(self) -> Dict[str, str]:
         """Get dictionary of supported language codes and names"""
@@ -275,6 +437,32 @@ class LocalizedResponses:
             self.responses[language] = {}
         
         self.responses[language][key] = text
+
+# Standalone functions for direct use (as requested in the original code)
+def translate(text: str, target_lang: str = "en") -> str:
+    """
+    Translate text to target language using mT5 model.
+    
+    Args:
+        text: Text to translate
+        target_lang: Target language code (default: "en")
+        
+    Returns:
+        Translated text
+    """
+    return translation_service.translate_text(text, target_lang)
+
+def detect_language(text: str) -> str:
+    """
+    Detect language of a given text.
+    
+    Args:
+        text: Text to analyze
+        
+    Returns:
+        Detected language code
+    """
+    return translation_service.detect_language(text)
 
 # Global instances
 translation_service = TranslationService()
