@@ -103,5 +103,3 @@ Copy
 Edit
 
 ---
-
-If you want, I can also **add installation screenshots and a folder structure diagram** so your README looks more professional and beginner-friendly. That way, even someone new to React Native or Flask can follow without guesswork.
