@@ -1,230 +1,155 @@
 import joblib
+import os
+import numpy as np
 from .base_agent import BaseAgent
 
 class CropAgent(BaseAgent):
-    def __init__(self):
-        self.model = joblib.load("backend/models/crop_model.pkl")
-
-    def handle(self, query, context):
-        """Handle crop recommendation - returns English results only"""
-        # Extract features from context
-        features = [[
-            context.get("N", 50),
-            context.get("P", 30),
-            context.get("K", 40),
-            context.get("temperature", 25),
-            context.get("humidity", 60),
-            context.get("ph", 6.5),
-            context.get("rain", 100)
-        ]]
-
-        try:
-            # Get prediction for top crop
-            pred = self.model.predict(features)[0]
-            
-            # Get probabilities for top 3 crops
-            try:
-                probs = self.model.predict_proba(features)[0]
-                # Get indices of top 3 probabilities
-                top_3_indices = probs.argsort()[-3:][::-1]
-                # Get corresponding crop names and confidence scores
-                top_3_crops = [self.model.classes_[i] for i in top_3_indices]
-                top_3_confidences = [float(probs[i]) for i in top_3_indices]
-                
-                # Create list of recommended crops with their confidence scores
-                recommended_crops = []
-                for i in range(len(top_3_crops)):
-                    recommended_crops.append({
-                        "crop": top_3_crops[i],
-                        "confidence": top_3_confidences[i]
-                    })
-                
-                confidence_score = float(max(probs))
-            except Exception as e:
-                print(f"Error getting probabilities in handle method: {e}")
-                confidence_score = 0.8
-                recommended_crops = [{"crop": pred, "confidence": confidence_score}]
-                top_3_crops = [pred]
-            
-            return {
-                "agent_used": "crop",
-                "top_crop": pred,
-                "original_crop": pred,
-                "recommended_crops": top_3_crops,
-                "detailed_recommendations": recommended_crops,
-                "confidence": confidence_score
-            }
-        except Exception as e:
-            print(f"❌ Model prediction failed in handle method: {e}")
-            # Use fallback prediction if model fails
-            fallback = self._fallback_prediction(
-                context.get("N", 50),
-                context.get("P", 30),
-                context.get("K", 40),
-                context.get("temperature", 25),
-                context.get("humidity", 60),
-                context.get("ph", 6.5),
-                context.get("rain", 100)
-            )
-            return {
-                "agent_used": "crop",
-                "top_crop": fallback["top_crop"],
-                "original_crop": fallback["top_crop"],
-                "recommended_crops": fallback["recommended_crops"],
-                "detailed_recommendations": fallback["detailed_recommendations"],
-                "confidence": fallback["confidence"],
-                "fallback_used": True
-            }
-
-    def predict(self, payload: dict) -> dict:
-        """
-        Predict crop recommendation based on soil and environmental conditions
-        Returns results in English only - translation handled by multilingual pipeline
-        """
-        ctx = payload.get("context", {})
+    def __init__(self, models_dir=None):
+        super().__init__("crop", models_dir)
         
-        # Parse features with defaults
-        N = float(ctx.get("N", ctx.get("nitrogen", 90)))
-        P = float(ctx.get("P", ctx.get("phosphorus", 42)))
-        K = float(ctx.get("K", ctx.get("potassium", 43)))
-        temperature = float(ctx.get("temperature", ctx.get("temp", 25.0)))
-        humidity = float(ctx.get("humidity", 80.0))
-        ph = float(ctx.get("ph", ctx.get("pH", 6.5)))
-        rainfall = float(ctx.get("rainfall", ctx.get("rain", 200.0)))
-        
-        # Create feature array: [N, P, K, temperature, humidity, ph, rainfall]
-        X = [[N, P, K, temperature, humidity, ph, rainfall]]
-        
-        try:
-            # Get prediction for top crop
-            pred = self.model.predict(X)[0]
-            
-            # Get probabilities for top 3 crops
-            try:
-                probs = self.model.predict_proba(X)[0]
-                # Get indices of top 3 probabilities
-                top_3_indices = probs.argsort()[-3:][::-1]
-                # Get corresponding crop names and confidence scores
-                top_3_crops = [self.model.classes_[i] for i in top_3_indices]
-                top_3_confidences = [float(probs[i]) for i in top_3_indices]
-                
-                # Create list of recommended crops with their confidence scores
-                recommended_crops = []
-                for i in range(len(top_3_crops)):
-                    recommended_crops.append({
-                        "crop": top_3_crops[i],
-                        "confidence": top_3_confidences[i]
-                    })
-                
-                confidence_score = float(max(probs))
-            except Exception as e:
-                print(f"Error getting probabilities: {e}")
-                confidence_score = 0.8
-                recommended_crops = [{"crop": pred, "confidence": confidence_score}]
-                top_3_crops = [pred]
-            
-            # Create message with top 3 recommendations
-            message = "Based on your soil and climate conditions, I recommend growing:"  
-            for i, crop_info in enumerate(recommended_crops):
-                message += f"\n{i+1}. {crop_info['crop']} (Confidence: {crop_info['confidence']:.1%})"
-            
-            return {
-                "agent_used": "crop",
-                "top_crop": pred,
-                "recommended_crops": top_3_crops,
-                "detailed_recommendations": recommended_crops,
-                "confidence": confidence_score,
-                "features_used": {
-                    "N": N, "P": P, "K": K,
-                    "temperature": temperature,
-                    "humidity": humidity,
-                    "ph": ph,
-                    "rainfall": rainfall
-                },
-                "success": True,
-                "message": message
-            }
-        except Exception as e:
-            print(f"❌ Model prediction failed: {e}")
-            return self._fallback_prediction(N, P, K, temperature, humidity, ph, rainfall)
-
-    def _fallback_prediction(self, N, P, K, temperature, humidity, ph, rainfall):
-        """Fallback heuristic-based crop recommendation with top 3 crops"""
-        
-        # Define potential crops with their conditions and confidence scores
-        potential_crops = [
-            {"crop": "rice", "confidence": 0.6 if (rainfall > 150 and 5.0 <= ph <= 6.8 and humidity > 70) else 0.3},
-            {"crop": "wheat", "confidence": 0.55 if (temperature < 20 and rainfall < 100) else 0.25},
-            {"crop": "maize", "confidence": 0.5 if (20 <= temperature <= 30 and 100 <= rainfall <= 200) else 0.2},
-            {"crop": "cotton", "confidence": 0.45 if (ph > 7.0 and rainfall < 80) else 0.15},
-            {"crop": "chickpea", "confidence": 0.4 if (temperature > 25 and rainfall < 120) else 0.1},
-            {"crop": "kidneybeans", "confidence": 0.35 if (humidity > 65 and 6.0 <= ph <= 7.5) else 0.05}
+        # Try to load model from multiple possible locations
+        model_paths = [
+            os.path.join("models", "crop_model.pkl"),
+            os.path.join("backend", "models", "crop_model.pkl"),
+            "crop_model.pkl"
         ]
         
-        # Sort crops by confidence score in descending order
-        sorted_crops = sorted(potential_crops, key=lambda x: x["confidence"], reverse=True)
+        if models_dir:
+            model_paths.insert(0, os.path.join(models_dir, "crop_model.pkl"))
         
-        # Get top 3 crops
-        top_3_crops = sorted_crops[:3]
-        top_crop = top_3_crops[0]["crop"]
-        top_confidence = top_3_crops[0]["confidence"]
+        self.model = None
+        for path in model_paths:
+            try:
+                if os.path.exists(path):
+                    self.model = joblib.load(path)
+                    print(f"Loaded crop model from {path}")
+                    break
+            except Exception as e:
+                print(f"Failed to load model from {path}: {e}")
+                continue
         
-        # Create message with top 3 recommendations
-        message = "Based on basic heuristics, I recommend growing:"  
-        for i, crop_info in enumerate(top_3_crops):
-            message += f"\n{i+1}. {crop_info['crop']} (Confidence: {crop_info['confidence']:.1%})"
+        if self.model is None:
+            print("Warning: Could not load crop model. Using dummy predictions.")
+
+    def predict(self, payload):
+        """Main prediction method expected by orchestrator"""
+        context = payload.get("context", {})
+        text = payload.get("text", "")
+        
+        # Extract soil and climate parameters from context
+        features = self._extract_features(context, text)
+        
+        if self.model is None:
+            return self._get_dummy_prediction(features)
+        
+        try:
+            # Convert to numpy array for prediction
+            features_array = np.array([features])
+            
+            # Get prediction
+            prediction = self.model.predict(features_array)[0]
+            
+            # Get probabilities if available
+            try:
+                probabilities = self.model.predict_proba(features_array)[0]
+                # Get top 3 crops
+                top_indices = probabilities.argsort()[-3:][::-1]
+                top_crops = [self.model.classes_[i] for i in top_indices]
+                top_probs = [float(probabilities[i]) for i in top_indices]
+                
+                confidence = float(max(probabilities))
+            except:
+                top_crops = [prediction]
+                top_probs = [0.8]
+                confidence = 0.8
+            
+            return {
+                "success": True,
+                "top_crop": prediction,
+                "recommended_crops": top_crops,
+                "confidence_scores": top_probs,
+                "confidence": confidence,
+                "features_used": {
+                    "N": features[0], "P": features[1], "K": features[2],
+                    "temperature": features[3], "humidity": features[4],
+                    "ph": features[5], "rainfall": features[6]
+                },
+                "message": f"Based on your soil and climate conditions, I recommend growing {prediction}. This recommendation has a confidence score of {confidence:.2f}.",
+                "agent_used": "crop"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Prediction failed: {str(e)}",
+                "agent_used": "crop"
+            }
+
+    def _extract_features(self, context, text):
+        """Extract numerical features from context and text"""
+        # Default values for soil and climate parameters
+        defaults = {
+            "N": 50, "P": 30, "K": 40,
+            "temperature": 25, "humidity": 60,
+            "ph": 6.5, "rainfall": 100
+        }
+        
+        # Try different key variations
+        key_mapping = {
+            "N": ["N", "nitrogen", "n"],
+            "P": ["P", "phosphorus", "p"],
+            "K": ["K", "potassium", "k"],
+            "temperature": ["temperature", "temp", "Temperature"],
+            "humidity": ["humidity", "Humidity"],
+            "ph": ["ph", "pH", "Ph"],
+            "rainfall": ["rainfall", "rain", "precipitation"]
+        }
+        
+        features = []
+        for param in ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]:
+            value = defaults[param]
+            
+            # Check various keys for this parameter
+            for key in key_mapping.get(param, [param]):
+                if key in context and context[key] is not None:
+                    try:
+                        value = float(context[key])
+                        break
+                    except (ValueError, TypeError):
+                        continue
+            
+            features.append(value)
+        
+        return features
+
+    def _get_dummy_prediction(self, features):
+        """Return dummy prediction when model is not available"""
+        import random
+        
+        crops = ['wheat', 'rice', 'corn', 'barley', 'cotton']
+        selected_crop = random.choice(crops)
         
         return {
-            "agent_used": "crop",
-            "top_crop": top_crop,
-            "recommended_crops": [crop_info["crop"] for crop_info in top_3_crops],
-            "detailed_recommendations": top_3_crops,
-            "confidence": top_confidence,
-            "features_used": {
-                "N": N, "P": P, "K": K,
-                "temperature": temperature,
-                "humidity": humidity,
-                "ph": ph,
-                "rainfall": rainfall
-            },
             "success": True,
-            "message": message,
-            "fallback_used": True
+            "top_crop": selected_crop,
+            "recommended_crops": [selected_crop],
+            "confidence_scores": [0.7],
+            "confidence": 0.7,
+            "features_used": {
+                "N": features[0], "P": features[1], "K": features[2],
+                "temperature": features[3], "humidity": features[4], 
+                "ph": features[5], "rainfall": features[6]
+            },
+            "message": f"Based on your conditions, I recommend growing {selected_crop} (using fallback prediction).",
+            "agent_used": "crop",
+            "note": "This is a fallback prediction as the ML model is not available."
         }
+
+    def handle(self, query, context):
+        """Legacy method for backward compatibility"""
+        payload = {"text": query, "context": context}
+        return self.predict(payload)
 
     def process_query(self, text: str, payload: dict) -> dict:
         """Process query using the predict method"""
         return self.predict(payload)
-
-    def format_result_text(self, result, context):
-        """Format result into readable text with top 3 recommendations"""
-        recommended_crops = result.get("recommended_crops", [])
-        detailed_recommendations = result.get("detailed_recommendations", [])
-        
-        if not recommended_crops:
-            return "No crop recommendations available."
-        
-        # Start with a header
-        base_text = "Top crop recommendations:\n"
-        
-        # If we have detailed recommendations with confidence scores
-        if detailed_recommendations:
-            for i, crop_info in enumerate(detailed_recommendations):
-                crop_name = crop_info.get("crop")
-                confidence = crop_info.get("confidence", 0)
-                
-                if isinstance(confidence, (int, float)):
-                    confidence_text = f"{confidence:.1%}"
-                else:
-                    confidence_text = "N/A"
-                    
-                base_text += f"{i+1}. {crop_name} (Confidence: {confidence_text})\n"
-        # Otherwise just list the crop names
-        else:
-            for i, crop in enumerate(recommended_crops[:3]):
-                base_text += f"{i+1}. {crop}\n"
-        
-        if result.get("fallback_used"):
-            base_text += "\n(Using basic heuristics due to model unavailability)"
-        
-        return base_text

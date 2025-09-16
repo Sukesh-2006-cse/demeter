@@ -4,18 +4,20 @@ from abc import ABC, abstractmethod
 def load_agent_classes(models_dir):
     """
     Instantiate agent classes and return dict keyed by intent names:
-      crop, market_yield, risk, finance
+      crop, market_yield, risk, finance, pest
     """
     from .crop_agent import CropAgent
     from .market_yield_agent import MarketYieldAgent
     from .risk_agent import RiskAgent
     from .finance_agent import FinanceAgent
+    from .pest_agent import PestAgent
 
     agents = {
-        "crop": CropAgent(),
+        "crop": CropAgent(models_dir=models_dir),
         "market_yield": MarketYieldAgent(models_dir=models_dir),
         "risk": RiskAgent(models_dir=models_dir),
-        "finance": FinanceAgent(models_dir=models_dir)
+        "finance": FinanceAgent(models_dir=models_dir),
+        "pest": PestAgent(models_dir=models_dir)
     }
     return agents
 
