@@ -106,7 +106,7 @@ class ApiService {
   async getCropRecommendations(
     request: CropRecommendationRequest
   ): Promise<ApiResponse> {
-    return this.makeRequest('/api/crop-recommendation', {
+    return this.makeRequest('/crop-recommendation', {
       method: 'POST',
       body: JSON.stringify(request),
     });
@@ -118,21 +118,31 @@ class ApiService {
   async getMarketPredictions(
     request: MarketPredictionRequest
   ): Promise<ApiResponse> {
-    return this.makeRequest('/api/market-prediction', {
+    return this.makeRequest('/market-prediction', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   }
 
   /**
-   * Get crop yield predictions
+   * Get crop yield predictions (uses market prediction endpoint)
    */
   async getYieldPredictions(
     request: YieldPredictionRequest
   ): Promise<ApiResponse> {
-    return this.makeRequest('/api/yield-prediction', {
+    // Convert yield request to market prediction format
+    const marketRequest = {
+      crop: request.crop,
+      location: request.soil_conditions ? 'location' : undefined,
+      area_hectares: request.area_hectares,
+      soil_conditions: request.soil_conditions,
+      weather_conditions: request.weather_conditions,
+      language: request.language
+    };
+    
+    return this.makeRequest('/market-prediction', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: JSON.stringify(marketRequest),
     });
   }
 
@@ -142,7 +152,7 @@ class ApiService {
   async getRiskAssessment(
     request: RiskAssessmentRequest
   ): Promise<ApiResponse> {
-    return this.makeRequest('/api/risk-assessment', {
+    return this.makeRequest('/risk-assessment', {
       method: 'POST',
       body: JSON.stringify(request),
     });
@@ -152,19 +162,19 @@ class ApiService {
    * Detect pests from image
    */
   async detectPests(request: PestDetectionRequest): Promise<ApiResponse> {
-    return this.makeRequest('/api/pest-detection', {
+    return this.makeRequest('/pest-detection', {
       method: 'POST',
       body: JSON.stringify(request),
     });
   }
 
   /**
-   * Get general agricultural advice
+   * Get general agricultural advice using query endpoint
    */
   async getAdvice(query: string, language?: string): Promise<ApiResponse> {
-    return this.makeRequest('/api/advice', {
+    return this.makeRequest('/query', {
       method: 'POST',
-      body: JSON.stringify({ query, language }),
+      body: JSON.stringify({ text: query, context: { language } }),
     });
   }
 
@@ -172,14 +182,14 @@ class ApiService {
    * Get supported languages
    */
   async getSupportedLanguages(): Promise<ApiResponse> {
-    return this.makeRequest('/api/languages');
+    return this.makeRequest('/languages');
   }
 
   /**
    * Health check endpoint
    */
   async healthCheck(): Promise<ApiResponse> {
-    return this.makeRequest('/api/health');
+    return this.makeRequest('/health');
   }
 
   /**
@@ -194,7 +204,7 @@ class ApiService {
         name: 'pest_image.jpg',
       } as any);
 
-      const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
+      const response = await fetch(`${API_BASE_URL}/upload-image`, {
         method: 'POST',
         body: formData,
         headers: {
