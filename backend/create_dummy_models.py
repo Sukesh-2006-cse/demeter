@@ -57,10 +57,26 @@ print(f"   ✓ Saved crop model with {len(crop_classes)} crop classes")
 # 2. Market Price Prediction Model
 print("2. Creating market price prediction model...")
 X_market = np.random.rand(1000, 5)  # Historical prices, demand, supply, season, weather
-y_market = np.random.rand(1000) * 1000 + 500  # Price range 500-1500
+y_market = np.random.rand(1000) * 50 + 20  # Price range 20-70 rupees per kg
 
 market_model = LinearRegression()
 market_model.fit(X_market, y_market)
+
+# Ensure reasonable predictions by clipping
+class ClippedLinearRegression:
+    def __init__(self, base_model, min_val=20, max_val=70):
+        self.base_model = base_model
+        self.min_val = min_val
+        self.max_val = max_val
+    
+    def predict(self, X):
+        predictions = self.base_model.predict(X)
+        return np.clip(predictions, self.min_val, self.max_val)
+    
+    def __getattr__(self, name):
+        return getattr(self.base_model, name)
+
+market_model = ClippedLinearRegression(market_model)
 
 joblib.dump(market_model, os.path.join(models_dir, "market_model.pkl"))
 joblib.dump(market_model, os.path.join(saved_models_dir, "market_model.pkl"))
@@ -69,10 +85,26 @@ print("   ✓ Saved market price prediction model")
 # 3. Yield Prediction Model
 print("3. Creating yield prediction model...")
 X_yield = np.random.rand(1000, 8)  # Soil, climate, crop type, area, fertilizer
-y_yield = np.random.rand(1000) * 50 + 10  # Yield range 10-60 tons/hectare
+y_yield = np.random.rand(1000) * 15 + 2  # Yield range 2-17 tons/hectare
 
 yield_model = LinearRegression()
 yield_model.fit(X_yield, y_yield)
+
+# Ensure reasonable yield predictions
+class ClippedYieldRegression:
+    def __init__(self, base_model, min_val=2, max_val=17):
+        self.base_model = base_model
+        self.min_val = min_val
+        self.max_val = max_val
+    
+    def predict(self, X):
+        predictions = self.base_model.predict(X)
+        return np.clip(predictions, self.min_val, self.max_val)
+    
+    def __getattr__(self, name):
+        return getattr(self.base_model, name)
+
+yield_model = ClippedYieldRegression(yield_model)
 
 joblib.dump(yield_model, os.path.join(models_dir, "yield_model.pkl"))
 joblib.dump(yield_model, os.path.join(saved_models_dir, "yield_model.pkl"))
