@@ -12,7 +12,7 @@ def load_agent_classes(models_dir):
     from .finance_agent import FinanceAgent
 
     agents = {
-        "crop": CropAgent(),
+        "crop": CropAgent(models_dir=models_dir),
         "market_yield": MarketYieldAgent(models_dir=models_dir),
         "risk": RiskAgent(models_dir=models_dir),
         "finance": FinanceAgent(models_dir=models_dir)

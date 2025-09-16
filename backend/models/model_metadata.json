@@ -1,0 +1,113 @@
+{
+  "crop_model": {
+    "features": [
+      "N",
+      "P",
+      "K",
+      "temperature",
+      "humidity",
+      "ph",
+      "rainfall"
+    ],
+    "classes": [
+      "rice",
+      "wheat",
+      "corn",
+      "barley",
+      "sugarcane",
+      "cotton",
+      "jute",
+      "coconut",
+      "papaya",
+      "orange",
+      "apple",
+      "muskmelon",
+      "watermelon",
+      "grapes",
+      "mango",
+      "banana",
+      "pomegranate",
+      "lentil",
+      "blackgram",
+      "mungbean",
+      "mothbeans",
+      "pigeonpeas",
+      "kidneybeans",
+      "chickpea",
+      "coffee"
+    ],
+    "description": "Random Forest model for crop recommendation based on soil and climate"
+  },
+  "market_model": {
+    "features": [
+      "historical_price",
+      "demand",
+      "supply",
+      "season",
+      "weather_score"
+    ],
+    "description": "Linear regression model for market price prediction"
+  },
+  "yield_model": {
+    "features": [
+      "N",
+      "P",
+      "K",
+      "temperature",
+      "humidity",
+      "ph",
+      "rainfall",
+      "area"
+    ],
+    "description": "Linear regression model for crop yield prediction"
+  },
+  "risk_model": {
+    "features": [
+      "temperature",
+      "humidity",
+      "rainfall",
+      "wind_speed",
+      "pressure",
+      "location_risk"
+    ],
+    "classes": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "description": "Random Forest model for agricultural risk assessment"
+  },
+  "pest_model": {
+    "features": [
+      "image_features"
+    ],
+    "classes": [
+      "armyworm",
+      "aphid",
+      "bollworm",
+      "cutworm",
+      "thrips",
+      "whitefly",
+      "brown_planthopper",
+      "stem_borer",
+      "leaf_miner",
+      "fruit_borer"
+    ],
+    "description": "Random Forest model for pest detection from images"
+  },
+  "finance_model": {
+    "features": [
+      "income",
+      "land_size",
+      "credit_score",
+      "crop_value",
+      "location_score"
+    ],
+    "classes": [
+      "eligible",
+      "not_eligible",
+      "partial_eligible"
+    ],
+    "description": "Random Forest model for agricultural finance eligibility"
+  }
+}
